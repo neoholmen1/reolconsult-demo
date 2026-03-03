@@ -139,7 +139,7 @@ export default function Referanser() {
                 </svg>
               </a>
               <a
-                href="tel:33365580"
+                href="tel:+4733365580"
                 className="inline-flex items-center gap-2 rounded-full border-2 border-primary/20 px-7 py-3.5 font-semibold text-primary transition-all duration-300 hover:border-primary/40 hover:bg-primary/5"
               >
                 Ring 33 36 55 80

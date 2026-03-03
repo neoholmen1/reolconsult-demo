@@ -148,7 +148,7 @@ export default function OmOss() {
                 <p>
                   <span className="font-semibold text-primary">Telefon:</span>{" "}
                   <a
-                    href="tel:33365580"
+                    href="tel:+4733365580"
                     className="underline decoration-accent/40 underline-offset-4 transition-colors hover:text-accent"
                   >
                     33 36 55 80

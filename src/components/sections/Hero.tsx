@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 
@@ -19,10 +19,37 @@ export default function Hero() {
     setCurrent((prev) => (prev + 1) % images.length);
   }, []);
 
+  const prev = useCallback(() => {
+    setCurrent((prev) => (prev - 1 + images.length) % images.length);
+  }, []);
+
+  // Auto-advance
   useEffect(() => {
     const timer = setInterval(next, 4500);
     return () => clearInterval(timer);
   }, [next]);
+
+  // Swipe / drag support
+  const pointerStart = useRef<{ x: number; y: number } | null>(null);
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    pointerStart.current = { x: e.clientX, y: e.clientY };
+  }, []);
+
+  const onPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (!pointerStart.current) return;
+      const dx = e.clientX - pointerStart.current.x;
+      const dy = Math.abs(e.clientY - pointerStart.current.y);
+      pointerStart.current = null;
+      // Only swipe if horizontal movement > 50px and more horizontal than vertical
+      if (Math.abs(dx) > 50 && Math.abs(dx) > dy) {
+        if (dx < 0) next();
+        else prev();
+      }
+    },
+    [next, prev],
+  );
 
   return (
     <section className="relative overflow-hidden bg-white -mt-[180px] pt-48 pb-20 sm:pt-56 sm:pb-28 lg:pt-60 lg:pb-32">
@@ -108,16 +135,41 @@ export default function Hero() {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="relative"
           >
-            <div className="relative aspect-[4/3] sm:aspect-[4/5] overflow-hidden rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.12)]">
+            <div
+              className="relative aspect-[4/3] sm:aspect-[4/5] overflow-hidden rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.12)] touch-pan-y select-none cursor-grab active:cursor-grabbing"
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
+            >
               {images.map((img, i) => (
                 <img
                   key={img.src}
                   src={img.src}
                   alt={img.alt}
-                  className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000"
+                  draggable={false}
+                  className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 pointer-events-none"
                   style={{ opacity: i === current ? 1 : 0 }}
                 />
               ))}
+
+              {/* Prev / Next arrows */}
+              <button
+                onClick={prev}
+                className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
+                aria-label="Forrige bilde"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+              <button
+                onClick={next}
+                className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
+                aria-label="Neste bilde"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
 
               {/* Dots */}
               <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2">

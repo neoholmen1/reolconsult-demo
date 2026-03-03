@@ -21,7 +21,7 @@ export default function CTASection() {
               Kontakt oss
             </Link>
             <a
-              href="tel:33365580"
+              href="tel:+4733365580"
               className="rounded-full border border-primary/20 px-10 py-4 text-base font-semibold text-primary transition-all duration-300 hover:bg-primary hover:text-white"
             >
               Ring 33 36 55 80

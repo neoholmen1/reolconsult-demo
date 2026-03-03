@@ -183,7 +183,7 @@ function InquiryModal({
               </button>
               <p className="text-center text-xs text-text-muted">
                 Vi svarer vanligvis innen 1 virkedag. Du kan også ringe oss direkte på{" "}
-                <a href="tel:33365580" className="font-semibold text-primary">33 36 55 80</a>.
+                <a href="tel:+4733365580" className="font-semibold text-primary">33 36 55 80</a>.
               </p>
             </form>
           </>

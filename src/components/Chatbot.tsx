@@ -490,7 +490,7 @@ export default function Chatbot() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.25, 0.4, 0.25, 1] }}
             onClick={() => setOpen(true)}
-            className="fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_30px_rgba(212,32,39,0.35)] transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(212,32,39,0.5)]"
+            className="fixed right-5 bottom-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_30px_rgba(212,32,39,0.35)] transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(212,32,39,0.5)] sm:right-6 sm:bottom-6"
             aria-label="Åpne chat"
           >
             <svg
@@ -518,13 +518,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.25, ease: [0.25, 0.4, 0.25, 1] }}
-            className="fixed z-50 flex flex-col overflow-hidden bg-white shadow-[0_30px_60px_rgba(0,0,0,0.15)] inset-0 sm:inset-auto sm:right-6 sm:bottom-6 sm:rounded-2xl"
-            style={{
-              width: undefined,
-              maxWidth: undefined,
-              maxHeight: undefined,
-            }}
-            /* sm+ gets fixed size via inline below */
+            className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-white shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:inset-auto sm:right-6 sm:bottom-6 sm:h-[500px] sm:w-[380px] sm:max-h-[calc(100vh-6rem)] sm:rounded-2xl"
           >
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between bg-primary px-5 py-4">

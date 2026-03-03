@@ -90,13 +90,13 @@ export default function Header() {
           <Link href="/">
             <img src="/logo.png" alt="Reolconsult" className="h-8 w-auto" />
           </Link>
-          <div className="flex items-center gap-4">
-            <a
-              href="tel:33365580"
-              className="text-sm font-semibold text-primary"
+          <div className="flex items-center gap-3">
+            <Link
+              href="/kontakt"
+              className="rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
             >
-              33 36 55 80
-            </a>
+              Kontakt oss
+            </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="text-text-dark"

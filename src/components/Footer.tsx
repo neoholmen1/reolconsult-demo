@@ -10,7 +10,7 @@ export default function Footer() {
           <img src="/logo.png" alt="Reolconsult" className="h-10 w-auto brightness-0 invert" />
         </div>
 
-        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-12 lg:grid-cols-4">
           {/* Kontakt */}
           <div>
             <h3 className="mb-6 text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
@@ -19,7 +19,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-white/60">
               <li>Smiløkka 7, 3173 Vear</li>
               <li>
-                <a href="tel:33365580" className="transition-colors duration-200 hover:text-white">
+                <a href="tel:+4733365580" className="transition-colors duration-200 hover:text-white">
                   Tlf: 33 36 55 80
                 </a>
               </li>

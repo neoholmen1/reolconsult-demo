@@ -106,7 +106,7 @@ export default function Kataloger() {
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <a
-                href="tel:33365580"
+                href="tel:+4733365580"
                 className="rounded-full bg-accent px-8 py-4 text-base font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(212,32,39,0.25)]"
               >
                 Ring 33 36 55 80
