@@ -1,29 +1,23 @@
 "use client";
 
-import { DM_Sans } from "next/font/google";
 import { useState } from "react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
 const ansatte = [
   {
     name: "Agnete H. Bechmann",
     role: "Salg & rådgivning",
-    phone: "45 00 73 22",
+    phone: "450 07 322",
   },
   {
     name: "Tore Aas-Kristiansen",
     role: "Salg & rådgivning",
-    phone: "98 20 43 23",
+    phone: "982 04 323",
   },
   {
     name: "Sentralbord",
     role: "Generelle henvendelser",
-    phone: "33 36 55 80",
+    phone: "333 65 580",
   },
 ];
 
@@ -31,15 +25,15 @@ export default function Kontakt() {
   const [submitted, setSubmitted] = useState(false);
 
   return (
-    <div className={dmSans.className}>
+    <div>
       {/* Hero */}
-      <section className="bg-[#faf8f6] pt-36 pb-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="bg-bg-light pt-8 pb-16 sm:pt-20 sm:pb-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
             <span className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
               Kontakt
             </span>
-            <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight text-primary md:text-5xl">
+            <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-primary sm:text-4xl md:text-5xl">
               Ta kontakt med oss
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-text-muted">
@@ -52,12 +46,12 @@ export default function Kontakt() {
       </section>
 
       {/* Skjema + Info */}
-      <section className="bg-white py-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="bg-white py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="grid gap-16 lg:grid-cols-5">
             {/* Kontaktskjema */}
             <AnimateOnScroll className="lg:col-span-3">
-              <div className="rounded-2xl border border-black/[0.04] bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.06)] md:p-10">
+              <div className="rounded-2xl border border-border bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.06)] md:p-10">
                 <h2 className="text-2xl font-bold text-primary">
                   Send oss en melding
                 </h2>
@@ -97,7 +91,7 @@ export default function Kontakt() {
                           name="name"
                           required
                           placeholder="Ditt fulle navn"
-                          className="w-full rounded-xl border border-black/[0.04] bg-[#faf8f6] px-4 py-3.5 text-primary placeholder:text-text-muted/50 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                          className="w-full rounded-xl border border-border bg-bg-light px-4 py-3.5 text-primary placeholder:text-text-muted/50 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                         />
                       </div>
                       <div>
@@ -112,7 +106,7 @@ export default function Kontakt() {
                           id="phone"
                           name="phone"
                           placeholder="Ditt telefonnummer"
-                          className="w-full rounded-xl border border-black/[0.04] bg-[#faf8f6] px-4 py-3.5 text-primary placeholder:text-text-muted/50 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                          className="w-full rounded-xl border border-border bg-bg-light px-4 py-3.5 text-primary placeholder:text-text-muted/50 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                         />
                       </div>
                     </div>
@@ -130,7 +124,7 @@ export default function Kontakt() {
                         name="email"
                         required
                         placeholder="din@epost.no"
-                        className="w-full rounded-xl border border-black/[0.04] bg-[#faf8f6] px-4 py-3.5 text-primary placeholder:text-text-muted/50 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                        className="w-full rounded-xl border border-border bg-bg-light px-4 py-3.5 text-primary placeholder:text-text-muted/50 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                       />
                     </div>
 
@@ -147,13 +141,13 @@ export default function Kontakt() {
                         required
                         rows={5}
                         placeholder="Hva kan vi hjelpe deg med?"
-                        className="w-full resize-none rounded-xl border border-black/[0.04] bg-[#faf8f6] px-4 py-3.5 text-primary placeholder:text-text-muted/50 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                        className="w-full resize-none rounded-xl border border-border bg-bg-light px-4 py-3.5 text-primary placeholder:text-text-muted/50 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                       />
                     </div>
 
                     <button
                       type="submit"
-                      className="w-full rounded-full bg-accent py-4 font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(212,32,39,0.25)] sm:w-auto sm:px-10"
+                      className="w-full rounded-full bg-accent py-4 font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-lg sm:w-auto sm:px-10 active:translate-y-[1px]"
                     >
                       Send melding
                     </button>
@@ -174,7 +168,7 @@ export default function Kontakt() {
                     {ansatte.map((person) => (
                       <div
                         key={person.phone}
-                        className="rounded-xl border border-black/[0.04] bg-white p-5 transition-shadow duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
+                        className="rounded-xl border border-border bg-white p-5 transition-shadow duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
                       >
                         <p className="font-semibold text-primary">
                           {person.name}
@@ -183,7 +177,7 @@ export default function Kontakt() {
                           {person.role}
                         </p>
                         <a
-                          href={`tel:${person.phone.replace(/\s/g, "")}`}
+                          href={`tel:+47${person.phone.replace(/\s/g, "")}`}
                           className="mt-2 inline-flex items-center gap-2 font-medium text-accent transition-colors hover:text-accent-hover"
                         >
                           <svg
@@ -242,8 +236,8 @@ export default function Kontakt() {
       </section>
 
       {/* Google Maps */}
-      <section className="bg-[#faf8f6] py-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="bg-bg-light py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
             <h2 className="text-center text-3xl font-bold tracking-tight text-primary md:text-4xl">
               Finn oss

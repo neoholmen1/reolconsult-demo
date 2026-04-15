@@ -4,12 +4,12 @@ const kataloger = [
   {
     title: "Butikkinnredning",
     description: "Komplett produktkatalog for butikkinnredning — gondoler, veggsystemer og tilbehør.",
-    href: "https://reolconsult.no/wp-content/uploads/2020/03/Produktkatalog-butikk-ReolConsult-2020_web.pdf",
+    href: "/kataloger/butikkinnredning.pdf",
   },
   {
     title: "Disker",
     description: "Kassedisker, betjeningsdisker og skranker — se alle muligheter.",
-    href: "https://reolconsult.no/wp-content/uploads/2020/03/Disker.pdf",
+    href: "/kataloger/disker.pdf",
   },
   {
     title: "Hjulkatalog",
@@ -51,7 +51,7 @@ export default function Kataloger() {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
               Dokumenter
             </p>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-primary sm:text-5xl">
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-primary sm:text-4xl md:text-5xl">
               Kataloger
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-text-muted">
@@ -63,7 +63,7 @@ export default function Kataloger() {
       </section>
 
       {/* Grid */}
-      <section className="bg-[#faf8f6] py-20 sm:py-28">
+      <section className="bg-bg-light py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {kataloger.map((katalog, i) => (
@@ -72,7 +72,7 @@ export default function Kataloger() {
                   href={katalog.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex h-full flex-col rounded-2xl border border-black/[0.04] bg-white p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
+                  className="group flex h-full flex-col rounded-2xl border border-border bg-white p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
                 >
                   <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent/5">
                     <PdfIcon />
@@ -104,16 +104,16 @@ export default function Kataloger() {
             <p className="mt-4 text-lg text-text-muted">
               Kontakt oss for å få tilsendt produktbrosjyrer i posten.
             </p>
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
               <a
                 href="tel:+4733365580"
-                className="rounded-full bg-accent px-8 py-4 text-base font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(212,32,39,0.25)]"
+                className="w-full sm:w-auto rounded-full bg-accent px-8 py-4 text-center text-base font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
               >
-                Ring 33 36 55 80
+                Ring 333 65 580
               </a>
               <a
                 href="mailto:mail@reolconsult.no?subject=Jeg%20%C3%B8nsker%20tilsendt%20en%20produktbrosjyre"
-                className="rounded-full border border-primary/20 px-8 py-4 text-base font-semibold text-primary transition-all duration-300 hover:bg-primary hover:text-white"
+                className="w-full sm:w-auto rounded-full border border-primary/20 px-8 py-4 text-center text-base font-semibold text-primary transition-all duration-300 hover:bg-primary hover:text-white active:translate-y-[1px]"
               >
                 Send e-post
               </a>

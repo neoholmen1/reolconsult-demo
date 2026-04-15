@@ -1,11 +1,5 @@
-import { DM_Sans } from "next/font/google";
 import type { Metadata } from "next";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "Bruktsalg – Reol-Consult AS",
@@ -121,16 +115,16 @@ const kategorier = [
 
 export default function Bruktsalg() {
   return (
-    <div className={dmSans.className}>
+    <div>
       {/* Hero */}
-      <section className="bg-[#faf8f6] pt-36 pb-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="bg-bg-light pt-8 pb-16 sm:pt-20 sm:pb-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
             <div className="inline-flex items-center gap-2 rounded-full border border-green-600/20 bg-green-600/10 px-4 py-1.5 text-sm font-semibold text-green-700">
               <span className="h-2 w-2 rounded-full bg-green-600" />
               Spar penger
             </div>
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-primary md:text-5xl">
+            <h1 className="mt-6 text-3xl font-bold leading-tight tracking-tight text-primary sm:text-4xl md:text-5xl">
               Brukte reoler og
               <br />
               innredning til gode priser
@@ -140,10 +134,10 @@ export default function Bruktsalg() {
               lagerinnredning og kontormøbler på lager. Alt er kvalitetskontrollert
               og klar for nytt bruk — til en brøkdel av nyprisen.
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <a
                 href="/kontakt"
-                className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(212,32,39,0.25)]"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
               >
                 Få tilbud på brukt
                 <svg
@@ -162,9 +156,9 @@ export default function Bruktsalg() {
               </a>
               <a
                 href="tel:+4733365580"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-primary/20 px-7 py-3.5 font-semibold text-primary transition-all duration-300 hover:border-primary/40 hover:bg-primary/5"
+                className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary/20 px-7 py-3.5 font-semibold text-primary transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 active:translate-y-[1px]"
               >
-                Ring 33 36 55 80
+                Ring 333 65 580
               </a>
             </div>
           </AnimateOnScroll>
@@ -172,8 +166,8 @@ export default function Bruktsalg() {
       </section>
 
       {/* Fordeler */}
-      <section className="bg-white py-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="bg-white py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
             <h2 className="text-center text-3xl font-bold tracking-tight text-primary md:text-4xl">
               Hvorfor kjøpe brukt?
@@ -183,7 +177,7 @@ export default function Bruktsalg() {
           <div className="mt-16 grid gap-8 sm:grid-cols-2">
             {fordeler.map((item, i) => (
               <AnimateOnScroll key={item.title} delay={i * 0.1}>
-                <div className="flex gap-5 rounded-2xl border border-black/[0.04] bg-white p-7 transition-shadow duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
+                <div className="flex gap-5 rounded-2xl border border-border bg-white p-7 transition-shadow duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
                     {item.icon}
                   </div>
@@ -203,8 +197,8 @@ export default function Bruktsalg() {
       </section>
 
       {/* Kategorier */}
-      <section className="bg-[#faf8f6] py-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="bg-bg-light py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
             <span className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
               Kategorier
@@ -221,7 +215,7 @@ export default function Bruktsalg() {
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {kategorier.map((kat, i) => (
               <AnimateOnScroll key={kat.title} delay={i * 0.08}>
-                <div className="rounded-2xl border border-black/[0.04] bg-white p-7 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
+                <div className="rounded-2xl border border-border bg-white p-7 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
                   <h3 className="text-lg font-semibold text-primary">
                     {kat.title}
                   </h3>
@@ -236,7 +230,7 @@ export default function Bruktsalg() {
       </section>
 
       {/* CTA */}
-      <section className="bg-white py-24">
+      <section className="bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-3xl px-6 text-center">
           <AnimateOnScroll>
             <h2 className="text-3xl font-bold tracking-tight text-primary md:text-4xl">
@@ -249,15 +243,15 @@ export default function Bruktsalg() {
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <a
                 href="/kontakt"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-primary-light hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)]"
+                className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] active:translate-y-[1px]"
               >
                 Kontakt oss
               </a>
               <a
                 href="tel:+4733365580"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-primary/20 px-7 py-3.5 font-semibold text-primary transition-all duration-300 hover:border-primary/40 hover:bg-primary/5"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-primary/20 px-7 py-3.5 font-semibold text-primary transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 active:translate-y-[1px]"
               >
-                Ring 33 36 55 80
+                Ring 333 65 580
               </a>
             </div>
           </AnimateOnScroll>

@@ -3,23 +3,26 @@
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 
 const clients = [
-  "Foodora",
-  "Byggmakker",
-  "Jula",
-  "Nille",
-  "Elkjøp",
-  "Coop",
-  "Rema 1000",
-  "Biltema",
+  "Nortura",
+  "Floyd by Smith",
+  "Foodora Market",
+  "Nordisk Aviation Products",
+  "Tilbords",
+  "Rheinmetall Defence",
+  "Cemo Gourmet",
+  "TESS",
+  "ASKO",
+  "Diplomat",
+  "Findus",
+  "Solar",
 ];
 
-// Repeat 4x so one set is always wider than the viewport
 const repeated = [...clients, ...clients, ...clients, ...clients];
 
 export default function References() {
   return (
-    <section className="bg-[#faf8f6] py-28 sm:py-36">
-      <AnimateOnScroll className="text-center mb-14">
+    <section className="bg-bg-light pt-6 pb-10 sm:pt-8 sm:pb-12">
+      <AnimateOnScroll className="text-center mb-12" variant="fadeIn">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
           Stolte leverandører til
         </p>
@@ -32,20 +35,13 @@ export default function References() {
           WebkitMaskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            width: "max-content",
-            animation: "marquee 40s linear infinite",
-          }}
-        >
+        <div className="flex w-max animate-marquee">
           {repeated.map((client, i) => (
             <div
               key={i}
-              style={{ margin: "0 12px", flexShrink: 0 }}
-              className="flex h-16 items-center justify-center rounded-xl border border-black/[0.04] bg-white px-10 shadow-sm"
+              className="mx-3 flex h-14 shrink-0 items-center justify-center rounded-xl border border-border bg-white px-10"
             >
-              <span className="text-base font-semibold tracking-wide text-text-dark/30 whitespace-nowrap">
+              <span className="text-sm font-semibold tracking-wide text-text-muted/60 whitespace-nowrap">
                 {client}
               </span>
             </div>
@@ -54,13 +50,13 @@ export default function References() {
       </div>
 
       <AnimateOnScroll delay={0.2}>
-        <div className="mt-12 text-center">
+        <div className="mt-10 text-center">
           <a
             href="/referanser"
-            className="inline-flex items-center gap-2 text-sm font-medium text-primary transition-all duration-300 hover:gap-3"
+            className="group inline-flex items-center gap-2 text-sm font-medium text-primary transition-all duration-200 hover:gap-3"
           >
             Se alle referanser
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
             </svg>
           </a>

@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-/* eslint-disable @next/next/no-img-element */
+import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { motion } from "motion/react";
 
 const navLinks = [
   { href: "/produkter", label: "Produkter" },
@@ -10,13 +12,14 @@ const navLinks = [
   { href: "/bruktsalg", label: "Bruktsalg" },
   { href: "/referanser", label: "Referanser" },
   { href: "/om-oss", label: "Om oss" },
-  { href: "/kontakt", label: "Kontakt" },
 ];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [scrollingDown, setScrollingDown] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -30,76 +33,88 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 bg-white transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "shadow-[0_1px_3px_rgba(0,0,0,0.08)] border-b border-black/5"
-          : ""
+          ? "bg-white/80 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] border-b border-border/50"
+          : "bg-white"
       }`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Nav row: centered on top */}
-        <div className="hidden md:flex h-14 items-center justify-center gap-8 pt-2">
+        {/* Desktop: Nav row centered on top */}
+        <div className="hidden md:flex h-14 items-center justify-center gap-1 pt-2">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="group relative px-3 py-1.5 text-[13px] font-medium text-text-dark/70 transition-colors duration-300 hover:text-text-dark"
+              className={`relative px-4 py-2.5 text-[13px] font-medium transition-colors duration-300 ${
+                isActive(link.href)
+                  ? "text-text-dark"
+                  : "text-text-dark/70 hover:text-text-dark"
+              }`}
+              onMouseEnter={() => setHoveredLink(link.href)}
+              onMouseLeave={() => setHoveredLink(null)}
             >
-              {link.label}
-              <svg
-                className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-                viewBox="0 0 100 40"
-                preserveAspectRatio="none"
-                fill="none"
-              >
-                <rect
-                  x="2" y="2" width="96" height="36" rx="18"
-                  stroke="#D42027"
-                  strokeWidth="2"
-                  pathLength="1"
-                  strokeDasharray="1"
-                  strokeDashoffset="1"
-                  className="transition-all duration-500 ease-out group-hover:[stroke-dashoffset:0]"
+              {/* Hover: animated circle drawing around button */}
+              <span
+                key={hoveredLink === link.href ? "hover" : "idle"}
+                className={`nav-draw-circle ${
+                  hoveredLink === link.href && !isActive(link.href) ? "drawing" : ""
+                }`}
+              />
+              <span className="relative z-10">{link.label}</span>
+              {/* Active dot */}
+              {isActive(link.href) && (
+                <motion.span
+                  layoutId="nav-dot"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[6px] w-[6px] rounded-full bg-accent"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
-              </svg>
+              )}
             </Link>
           ))}
           <Link
             href="/kontakt"
-            className="rounded-full bg-accent px-5 py-1.5 text-[13px] font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_0_20px_rgba(212,32,39,0.3)]"
+            className="ml-4 rounded-full bg-accent px-6 py-2 text-[13px] font-semibold text-white transition-all duration-200 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
           >
             Kontakt oss
           </Link>
         </div>
 
-        {/* Logo row: centered below nav — hides on scroll down */}
+        {/* Desktop: Logo row — hides on scroll down */}
         <div
           className={`hidden md:flex items-center justify-center overflow-hidden transition-all duration-300 ease-in-out ${
-            scrollingDown ? "max-h-0 opacity-0 pt-0 pb-0" : "max-h-40 opacity-100 pt-3 pb-5"
+            scrollingDown ? "max-h-0 opacity-0 pt-0 pb-0" : "max-h-40 opacity-100 pt-1 pb-2"
           }`}
         >
           <Link href="/">
-            <img src="/logo.png" alt="Reolconsult" width="223" height="121" className="w-[223px] h-auto" />
+            <Image src="/logo.png" alt="Reolconsult" width={223} height={121} className="w-[223px] h-auto" priority />
           </Link>
         </div>
 
         {/* Mobile: single row */}
-        <div className="flex h-16 items-center justify-between md:hidden">
-          <Link href="/">
-            <img src="/logo.png" alt="Reolconsult" className="h-8 w-auto" />
+        <div className="flex h-[80px] items-center justify-between md:hidden">
+          <Link href="/" className="shrink-0">
+            <Image src="/logo.png" alt="Reolconsult" width={111} height={60} className="h-[60px] w-auto" priority />
           </Link>
           <div className="flex items-center gap-3">
             <Link
               href="/kontakt"
-              className="rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+              className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-accent-hover active:translate-y-[1px]"
             >
-              Kontakt oss
+              Kontakt
             </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="text-text-dark"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-text-dark transition-colors hover:bg-black/5"
               aria-label="Meny"
             >
               <svg
@@ -130,24 +145,26 @@ export default function Header() {
 
       {/* Mobile fullscreen overlay */}
       {menuOpen && (
-        <div className="fixed inset-0 top-16 z-40 bg-white/95 backdrop-blur-2xl md:hidden">
-          <nav className="flex flex-col items-center justify-center gap-6 pt-20">
+        <div className="fixed inset-0 top-[80px] z-40 bg-white md:hidden">
+          <nav className="flex flex-col gap-1 px-6 pt-8">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className="text-2xl font-semibold text-text-dark hover:text-primary transition-colors"
+                className={`flex w-full items-center justify-center rounded-2xl py-4 text-lg font-semibold transition-colors ${
+                  isActive(link.href)
+                    ? "text-accent bg-accent/5"
+                    : "text-text-dark hover:bg-black/[0.03] hover:text-accent"
+                }`}
               >
                 {link.label}
               </Link>
             ))}
             <Link
               href="/kontakt"
-              onClick={() => setMenuOpen(false)}
-              className="mt-4 rounded-full bg-accent px-8 py-3 text-base font-semibold text-white hover:bg-accent-hover transition-colors"
+              className="mt-4 w-full rounded-full bg-accent py-4 text-center text-base font-semibold text-white hover:bg-accent-hover transition-all duration-300"
             >
-              Få tilbud
+              Kontakt oss
             </Link>
           </nav>
         </div>

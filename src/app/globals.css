@@ -1,32 +1,58 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: #1A1A1A;
-  --color-primary-light: #333333;
-  --color-accent: #D42027;
-  --color-accent-hover: #B91C22;
-  --color-bg-light: #F5F5F7;
-  --color-bg-dark: #0A0A0A;
-  --color-text-dark: #1D1D1F;
-  --color-text-muted: #86868B;
-  --color-surface: #FBFBFD;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Primary — rent sort, ingen blåtone */
+  --color-primary: #171717;
+  --color-primary-light: #262626;
+  --color-primary-dark: #0a0a0a;
+
+  /* Red accent */
+  --color-accent: #dc2626;
+  --color-accent-hover: #b91c1c;
+  --color-accent-light: rgba(220, 38, 38, 0.08);
+
+  /* Backgrounds */
+  --color-bg-light: #faf8f6;
+  --color-bg-dark: #0a0a0a;
+  --color-bg-cool: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #faf8f6;
+
+  /* Text */
+  --color-text-dark: #171717;
+  --color-text-muted: #737373;
+  --color-text-light: #a3a3a3;
+
+  /* Borders */
+  --color-border: rgba(0, 0, 0, 0.06);
+  --color-border-light: rgba(0, 0, 0, 0.04);
+
+  /* Font */
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 html {
-  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 body {
   background: var(--color-surface);
   color: var(--color-text-dark);
   font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+@layer base {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 ::selection {
-  background: rgba(212, 32, 39, 0.15);
+  background: rgba(220, 38, 38, 0.12);
   color: inherit;
 }
 
@@ -36,23 +62,94 @@ body {
   border-radius: 4px;
 }
 
-.text-gradient {
-  background: linear-gradient(135deg, #1A1A1A 0%, #333333 50%, #D42027 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Button active states */
+@layer base {
+  a, button {
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  a[class*="rounded-full"][class*="bg-accent"]:active,
+  button[class*="rounded-full"][class*="bg-accent"]:active {
+    transform: translateY(1px);
+  }
+
+  a[class*="rounded-full"][class*="border"]:active,
+  button[class*="rounded-full"][class*="border"]:active {
+    transform: translateY(1px);
+  }
 }
 
+/* Marquee — smooth linear */
 @keyframes marquee {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(-25%);
+    transform: translate3d(-25%, 0, 0);
   }
 }
 
 .animate-marquee {
-  animation: marquee 25s linear infinite;
+  animation: marquee 40s linear infinite;
+  will-change: transform;
 }
 
+/* Ken Burns zoom */
+@keyframes ken-burns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+.animate-ken-burns {
+  animation: ken-burns 6s ease-out forwards;
+}
+
+/* Cookie banner slide-up */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out forwards;
+}
+
+/* Nav hover circle draw */
+@property --draw-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.nav-draw-circle {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--color-accent);
+  border-radius: 9999px;
+  pointer-events: none;
+  --draw-angle: 0deg;
+  -webkit-mask: conic-gradient(from -90deg, #000 var(--draw-angle), transparent var(--draw-angle));
+  mask: conic-gradient(from -90deg, #000 var(--draw-angle), transparent var(--draw-angle));
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.nav-draw-circle.drawing {
+  opacity: 1;
+  animation: nav-draw 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes nav-draw {
+  from { --draw-angle: 0deg; }
+  to { --draw-angle: 360deg; }
+}
