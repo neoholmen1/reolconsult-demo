@@ -1,6 +1,19 @@
+import type { Metadata } from "next";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { getCurrentSite, getSiteSettingsOrFallback } from "@/lib/site";
 
-export default function Personvern() {
+export const metadata: Metadata = {
+  title: "Personvern – Reol-Consult AS",
+  description:
+    "Reol-Consult AS sin personvernerklæring: hva vi samler inn, hvordan vi bruker det, og dine rettigheter.",
+};
+
+export default async function Personvern() {
+  const site = await getCurrentSite();
+  const settings = await getSiteSettingsOrFallback(site?.id ?? null);
+  const siteName = site?.name ?? "Reol-Consult AS";
+  const orgNumber = site?.org_number ?? "955 273 117";
+
   return (
     <div>
       <section className="bg-white py-16 sm:py-24">
@@ -10,7 +23,7 @@ export default function Personvern() {
               Personvernerklæring
             </h1>
             <p className="mt-3 text-sm text-text-muted">
-              Sist oppdatert: mars 2026
+              Sist oppdatert: april 2026
             </p>
           </AnimateOnScroll>
 
@@ -21,11 +34,19 @@ export default function Personvern() {
                   Behandlingsansvarlig
                 </h2>
                 <p>
-                  Reol-Consult AS, org.nr 955 273 117
-                  <br />
-                  Smiløkka 7, 3173 Vear
-                  <br />
-                  mail@reolconsult.no, 333 65 580
+                  {siteName}, org.nr {orgNumber}
+                  {settings.visit_address && (
+                    <>
+                      <br />
+                      {settings.visit_address}
+                    </>
+                  )}
+                  {(settings.email_general || settings.phone) && (
+                    <>
+                      <br />
+                      {[settings.email_general, settings.phone].filter(Boolean).join(", ")}
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -102,16 +123,18 @@ export default function Personvern() {
                   <li>Rett til å slette opplysninger</li>
                   <li>Rett til å trekke tilbake samtykke</li>
                 </ul>
-                <p className="mt-3">
-                  Kontakt oss på{" "}
-                  <a
-                    href="mailto:mail@reolconsult.no"
-                    className="text-accent underline decoration-accent/40 underline-offset-4 transition-colors hover:text-accent-hover"
-                  >
-                    mail@reolconsult.no
-                  </a>{" "}
-                  for å utøve dine rettigheter.
-                </p>
+                {settings.email_general && (
+                  <p className="mt-3">
+                    Kontakt oss på{" "}
+                    <a
+                      href={`mailto:${settings.email_general}`}
+                      className="text-accent underline decoration-accent/40 underline-offset-4 transition-colors hover:text-accent-hover"
+                    >
+                      {settings.email_general}
+                    </a>{" "}
+                    for å utøve dine rettigheter.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -133,19 +156,23 @@ export default function Personvern() {
                 </h2>
                 <p>
                   For spørsmål om personvern, kontakt oss på{" "}
-                  <a
-                    href="mailto:mail@reolconsult.no"
-                    className="text-accent underline decoration-accent/40 underline-offset-4 transition-colors hover:text-accent-hover"
-                  >
-                    mail@reolconsult.no
-                  </a>{" "}
-                  eller ring{" "}
-                  <a
-                    href="tel:+4733365580"
-                    className="text-accent underline decoration-accent/40 underline-offset-4 transition-colors hover:text-accent-hover"
-                  >
-                    333 65 580
-                  </a>
+                  {settings.email_general && (
+                    <a
+                      href={`mailto:${settings.email_general}`}
+                      className="text-accent underline decoration-accent/40 underline-offset-4 transition-colors hover:text-accent-hover"
+                    >
+                      {settings.email_general}
+                    </a>
+                  )}
+                  {settings.email_general && settings.phone && " eller ring "}
+                  {settings.phone && (
+                    <a
+                      href={`tel:+47${settings.phone.replace(/\s/g, "")}`}
+                      className="text-accent underline decoration-accent/40 underline-offset-4 transition-colors hover:text-accent-hover"
+                    >
+                      {settings.phone}
+                    </a>
+                  )}
                   .
                 </p>
               </div>

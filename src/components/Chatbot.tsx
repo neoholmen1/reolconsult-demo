@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
+import { useSite } from "@/components/SiteProvider";
+import { fillPlaceholders } from "@/lib/site";
 
 /* ───────────────────────── types ───────────────────────── */
 
@@ -112,7 +114,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "funksjoner", "tema", "emner", "spørre",
     ],
     response:
-      "Jeg kan hjelpe deg med:\n\n📦 Produkter — pallreoler, butikkinnredning, disker, garderobe, verksted, kontor, skole\n💰 Priser — konkrete priser og mengderabatter\n📊 Lagerstatus — hva vi har på lager\n🔧 Spesifikasjoner — tekniske detaljer\n🚚 Levering — leveringstid, montering, frakt\n🛡️ HMS — sikkerhetskontroll av reoler\n♻️ Bruktsalg — brukte reoler til gode priser\n📍 Besøk — utstilling, åpningstider, adresse\n📞 Kontakt — telefon, e-post, ansatte\n💼 Jobb — ledige stillinger\n\nBare spør om det du lurer på!",
+      "Jeg kan hjelpe deg med:\n\nProdukter — pallreoler, butikkinnredning, disker, garderobe, verksted, kontor, skole\nPriser — konkrete priser og mengderabatter\nLagerstatus — hva vi har på lager\nSpesifikasjoner — tekniske detaljer\nLevering — leveringstid, montering, frakt\nHMS — sikkerhetskontroll av reoler\nBruktsalg — brukte reoler til gode priser\nBesøk — utstilling, åpningstider, adresse\nKontakt — telefon, e-post, ansatte\nJobb — ledige stillinger\n\nBare spør om det du lurer på!",
     followUps: [
       { label: "Produkter", message: "Hva slags produkter har dere?" },
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
@@ -128,7 +130,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "faktura", "beløp", "kroner", "nok",
     ],
     response:
-      "Prisene varierer etter behov og omfang. Vi gir gjerne et uforpliktende tilbud! Kontakt oss på 333 65 580 eller mail@reolconsult.no med dine ønsker, så sender vi et prisoverslag.",
+      "Prisene varierer etter behov og omfang. Vi gir gjerne et uforpliktende tilbud! Kontakt oss på {phone} eller {email} med dine ønsker, så sender vi et prisoverslag.",
     followUps: [
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
       { label: "Se produkter", message: "Hva slags produkter har dere?" },
@@ -141,7 +143,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "søke", "søknad", "cv", "rekruttere", "rekruttering", "medarbeider",
     ],
     response:
-      "Vi er et lite, spesialisert team og har ikke alltid utlyste stillinger.\n\nSend gjerne en åpen søknad med CV til mail@reolconsult.no! Vi ser etter folk med erfaring innen innredning, salg eller logistikk.",
+      "Vi er et lite, spesialisert team og har ikke alltid utlyste stillinger.\n\nSend gjerne en åpen søknad med CV til {email}! Vi ser etter folk med erfaring innen innredning, salg eller logistikk.",
     followUps: [
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
       { label: "Om oss", message: "Hvem er Reol-Consult?" },
@@ -154,7 +156,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "nettbutikk", "handlekurv",
     ],
     response:
-      "Vi har ikke nettbutikk — alt skreddersys etter ditt behov.\n\n📞 Kontakt oss med dine behov (telefon eller e-post)\n📋 Vi gir uforpliktende tilbud\n🤝 Ved aksept avtaler vi levering og montering\n\nRing 333 65 580 eller send e-post til mail@reolconsult.no.",
+      "Vi har ikke nettbutikk — alt skreddersys etter ditt behov.\n\nKontakt oss med dine behov (telefon eller e-post)\nVi gir uforpliktende tilbud\nVed aksept avtaler vi levering og montering\n\nRing {phone} eller send e-post til {email}.",
     followUps: [
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
       { label: "Levering", message: "Hvordan leverer dere?" },
@@ -167,7 +169,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "tidspunkt", "klokka",
     ],
     response:
-      "⏰ Åpningstider:\n\nMandag–fredag: 08:00–16:00\nLørdag/søndag: Stengt\n\nVi tar imot besøk etter avtale. Ring 333 65 580 for å avtale tid!\n\n📍 Vi har 350 kvm utstilling i Smiløkka 7 på Vear.",
+      "⏰ Åpningstider:\n\nMandag–fredag: 08:00–16:00\nLørdag/søndag: Stengt\n\nVi tar imot besøk etter avtale. Ring {phone} for å avtale tid!\n\nVi har 350 kvm utstilling i {visit_address}.",
     followUps: [
       { label: "Besøk utstilling", message: "Kan jeg besøke utstillingen?" },
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
@@ -181,7 +183,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "kart", "vear", "tønsberg", "smiløkka", "postadresse",
     ],
     response:
-      "Du kan nå oss slik:\n\n📞 Sentralbord: 333 65 580\n📞 Agnete H. Bechmann: 450 07 322\n📞 Tore Aas-Kristiansen: 982 04 323\n📧 E-post: mail@reolconsult.no\n📍 Besøksadresse: Smiløkka 7, 3173 Vear (Tønsberg)\n📬 Postadresse: Postboks 1, 3108 Vear",
+      "Du kan nå oss slik:\n\nSentralbord: {phone}\nAgnete H. Bechmann: 450 07 322 — agh@reolconsult.no\nTore Aas-Kristiansen: 982 04 323 — tk@reolconsult.no\nGenerelt: {email}\nBesøksadresse: {visit_address} (Tønsberg)\nPostadresse: {postal_address}",
     followUps: [
       { label: "Besøk utstilling", message: "Kan jeg besøke utstillingen?" },
       { label: "Åpningstider", message: "Når er dere åpne?" },
@@ -195,7 +197,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "visning", "omvisning", "demonstrasjon", "vise",
     ],
     response:
-      "🏢 Vi har 350 kvm showroom på Smiløkka 7, Vear!\n\nHer kan du se og ta på produktene. Vi viser deg rundt og hjelper med å finne riktig løsning.\n\n📞 Avtale på forhånd: ring 333 65 580\n⏰ Mandag–fredag: 08:00–16:00",
+      "Vi har 350 kvm showroom på {visit_address}!\n\nHer kan du se og ta på produktene. Vi viser deg rundt og hjelper med å finne riktig løsning.\n\nAvtale på forhånd: ring {phone}\n⏰ Mandag–fredag: 08:00–16:00",
     followUps: [
       { label: "Åpningstider", message: "Når er dere åpne?" },
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
@@ -293,7 +295,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "tavle", "barnehagemøbler", "stellebord", "klasserom",
     ],
     response:
-      "Vi leverer til skoler og barnehager:\n\n🏫 Skole: stoler, pulter, bord, benker, tavler, elevskap\n👶 Barnehage: barnestoler, bord, åpen innredning, madrasser, stellebord\n\nHoldbare produkter som tåler hard slitasje.",
+      "Vi leverer til skoler og barnehager:\n\nSkole: stoler, pulter, bord, benker, tavler, elevskap\nBarnehage: barnestoler, bord, åpen innredning, madrasser, stellebord\n\nHoldbare produkter som tåler hard slitasje.",
     followUps: [
       { label: "Få tilbud", message: "Jeg vil ha et tilbud" },
       { label: "Garderobe", message: "Har dere garderobeskap?" },
@@ -306,7 +308,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "resirkuler", "bærekraft", "miljø", "grønn", "grønt", "billig",
     ],
     response:
-      "♻️ Vi har jevnlig inn brukte pallreoler og innredning til gode priser!\n\n• Brukte pallreoler: fra ca 2.000 kr/seksjon\n• Utvalget varierer — ring for å høre hva vi har inne\n• God stand, kvalitetssikret\n• Rimelig alternativ for oppstart eller utvidelse\n\n📞 Ring 333 65 580 eller send e-post til mail@reolconsult.no.",
+      " Vi har jevnlig inn brukte pallreoler og innredning til gode priser!\n\n• Brukte pallreoler: fra ca 2.000 kr/seksjon\n• Utvalget varierer — ring for å høre hva vi har inne\n• God stand, kvalitetssikret\n• Rimelig alternativ for oppstart eller utvidelse\n\nRing {phone} eller send e-post til {email}.",
     followUps: [
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
       { label: "Lagerinnredning", message: "Fortell om lagerinnredning" },
@@ -320,7 +322,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "reolkontroll",
     ],
     response:
-      "🛡️ Vi utfører HMS sikkerhetskontroll av pallreoler og lagerreoler.\n\nLovpålagt for virksomheter med lagerreoler!\n\n• Visuell inspeksjon av alle reolkomponenter\n• Sjekk av stolper, bjelker, fotplater og bolter\n• Merking av skader: grønn (OK), gul (overvåk), rød (bytt ut)\n• Skriftlig rapport med anbefalinger\n• Vi dekker hele Østlandet\n\n📞 Ta kontakt på 333 65 580 for å avtale inspeksjon!",
+      " Vi utfører HMS sikkerhetskontroll av pallreoler og lagerreoler.\n\nLovpålagt for virksomheter med lagerreoler!\n\n• Visuell inspeksjon av alle reolkomponenter\n• Sjekk av stolper, bjelker, fotplater og bolter\n• Merking av skader: grønn (OK), gul (overvåk), rød (bytt ut)\n• Skriftlig rapport med anbefalinger\n• Vi dekker hele Østlandet\n\nTa kontakt på {phone} for å avtale inspeksjon!",
     followUps: [
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
       { label: "Lagerinnredning", message: "Fortell om lagerinnredning" },
@@ -334,7 +336,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "leveringstid",
     ],
     response:
-      "🚚 Vi leverer over hele Norge med nøkkelferdige løsninger:\n\n• Prosjektering og planlegging\n• Tegning og 3D-visualisering\n• Levering med egen transport\n• Profesjonell montering på stedet\n\n⏱️ Leveringstid:\n• Lagerførte varer: 1–2 uker\n• Bestillingsvarer: 3–6 uker\n• Spesialtilpasset: 4–8 uker\n\nFrakt beregnes ut fra volum og distanse.",
+      "Vi leverer over hele Norge med nøkkelferdige løsninger:\n\n• Prosjektering og planlegging\n• Tegning og 3D-visualisering\n• Levering med egen transport\n• Profesjonell montering på stedet\n\n⏱ Leveringstid:\n• Lagerførte varer: 1–2 uker\n• Bestillingsvarer: 3–6 uker\n• Spesialtilpasset: 4–8 uker\n\nFrakt beregnes ut fra volum og distanse.",
     followUps: [
       { label: "Få tilbud", message: "Jeg vil ha et tilbud" },
       { label: "Bestille", message: "Hvordan bestiller jeg?" },
@@ -348,7 +350,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "reol-consult", "reolconsult",
     ],
     response:
-      "Reol-Consult AS ble etablert i november 1984 — over 40 års erfaring!\n\n🏢 Holder til på Vear i Tønsberg\n📐 350 kvm utstilling\n🇳🇴 Leverer til bedrifter over hele Norge\n👨‍🔧 En gruppe fagfolk med høy kompetanse\n\nVi er Østlandets største leverandør innen butikk-, lager-, verksted-, kontor-, arkiv- og garderobeinnredning — fra idé til ferdig sluttprodukt.\n\nOrg.nr: 955 273 117",
+      "Reol-Consult AS ble etablert i november 1984.\n\nHolder til på Vear i Tønsberg\n350 kvm utstilling\nLeverer til bedrifter over hele Norge\n\nVi leverer innredning til butikk, lager, verksted, kontor, arkiv og garderobe — fra første tegning til ferdig montert.\n\nOrg.nr: 955 273 117",
     followUps: [
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
       { label: "Se produkter", message: "Hva slags produkter har dere?" },
@@ -363,7 +365,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "løsning", "løsninger",
     ],
     response:
-      "Vi tilbyr innredningsløsninger innen:\n\n🏪 Butikkinnredning — gondoler, veggsystemer, kassedisker\n📦 Lagerinnredning — pallreoler opptil 30m, småvarereoler, mesanin\n🔧 Verksted — arbeidsbord, verktøyskap, pakkebord\n🏢 Kontor — skrivebord, stoler, skjermvegger\n🚿 Garderobe — garderobeskap, ladeskap, skoleskap\n🏫 Skole & barnehage — pulter, stoler, tavler, stellebord\n\nVi har også bruktsalg! Spør om en spesifikk kategori for mer detaljer.",
+      "Vi tilbyr innredningsløsninger innen:\n\nButikkinnredning — gondoler, veggsystemer, kassedisker\nLagerinnredning — pallreoler opptil 30m, småvarereoler, mesanin\nVerksted — arbeidsbord, verktøyskap, pakkebord\nKontor — skrivebord, stoler, skjermvegger\nGarderobe — garderobeskap, ladeskap, skoleskap\nSkole & barnehage — pulter, stoler, tavler, stellebord\n\nVi har også bruktsalg! Spør om en spesifikk kategori for mer detaljer.",
     followUps: [
       { label: "Butikk", message: "Fortell om butikkinnredning" },
       { label: "Lager", message: "Fortell om lagerinnredning" },
@@ -377,7 +379,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "rådgiver", "sentralbord",
     ],
     response:
-      "Våre kontaktpersoner:\n\n👩 Agnete H. Bechmann – Salg & rådgivning\nTlf: 450 07 322\n\n👨 Tore Aas-Kristiansen – Salg & rådgivning\nTlf: 982 04 323\n\n📞 Sentralbord: 333 65 580\n📧 mail@reolconsult.no",
+      "Våre kontaktpersoner:\n\nAgnete H. Bechmann – Salg & rådgivning\nTlf: 450 07 322\nE-post: agh@reolconsult.no\n\nTore Aas-Kristiansen – Salg & rådgivning\nTlf: 982 04 323\nE-post: tk@reolconsult.no\n\nSentralbord: {phone}\nGenerelt: {email}",
     followUps: [
       { label: "Send melding", message: "Hva er e-postadressen?" },
       { label: "Besøk", message: "Kan jeg besøke utstillingen?" },
@@ -390,7 +392,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "heihei", "heia",
     ],
     response:
-      "Hei! 👋 Velkommen til Reol-Consult. Hva kan jeg hjelpe deg med? Du kan spørre om produkter, priser, lagerstatus eller noe annet!",
+      "Hei! Velkommen til Reol-Consult. Hva kan jeg hjelpe deg med? Du kan spørre om produkter, priser, lagerstatus eller noe annet!",
     followUps: [
       { label: "Produkter", message: "Hva slags produkter har dere?" },
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
@@ -404,7 +406,7 @@ const knowledgeBase_nb: KnowledgeEntry[] = [
       "takk", "thanks", "flott", "supert", "fint", "topp", "perfekt",
     ],
     response:
-      "Bare hyggelig! Har du flere spørsmål er det bare å spørre. Du kan også nå oss på 333 65 580 😊",
+      "Bare hyggelig! Har du flere spørsmål er det bare å spørre. Du kan også nå oss på {phone}.",
     followUps: [
       { label: "Produkter", message: "Hva slags produkter har dere?" },
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
@@ -421,7 +423,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "features", "topics", "ask",
     ],
     response:
-      "I can help you with:\n\n📦 Products — pallet racking, shop fittings, counters, lockers, workshop, office, school\n💰 Prices — specific prices and volume discounts\n📊 Stock status — what we have in stock\n🔧 Specifications — technical details\n🚚 Delivery — delivery time, assembly, shipping\n🛡️ HSE — safety inspections of racking\n♻️ Used sales — used racking at great prices\n📍 Visit — showroom, opening hours, address\n📞 Contact — phone, email, staff\n💼 Jobs — vacancies\n\nJust ask about anything!",
+      "I can help you with:\n\nProducts — pallet racking, shop fittings, counters, lockers, workshop, office, school\nPrices — specific prices and volume discounts\nStock status — what we have in stock\nSpecifications — technical details\nDelivery — delivery time, assembly, shipping\nHSE — safety inspections of racking\nUsed sales — used racking at great prices\nVisit — showroom, opening hours, address\nContact — phone, email, staff\nJobs — vacancies\n\nJust ask about anything!",
     followUps: [
       { label: "Products", message: "What products do you offer?" },
       { label: "Contact us", message: "How can I contact you?" },
@@ -437,7 +439,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "invoice", "amount", "nok", "quote",
     ],
     response:
-      "Prices vary based on needs and scope. We're happy to provide a no-obligation quote! Contact us at +47 333 65 580 or mail@reolconsult.no with your requirements, and we'll send you a price estimate.",
+      "Prices vary based on needs and scope. We're happy to provide a no-obligation quote! Contact us at {phone_intl} or {email} with your requirements, and we'll send you a price estimate.",
     followUps: [
       { label: "Contact us", message: "How can I contact you?" },
       { label: "See products", message: "What products do you offer?" },
@@ -450,7 +452,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "apply", "application", "resume", "recruit", "recruitment", "employee",
     ],
     response:
-      "We're a small, specialized team and don't always have open positions.\n\nFeel free to send an open application with your CV to mail@reolconsult.no! We look for people with experience in interior fittings, sales, or logistics.",
+      "We're a small, specialized team and don't always have open positions.\n\nFeel free to send an open application with your CV to {email}! We look for people with experience in interior fittings, sales, or logistics.",
     followUps: [
       { label: "Contact us", message: "How can I contact you?" },
       { label: "About us", message: "Who is Reol-Consult?" },
@@ -463,7 +465,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "webshop", "cart",
     ],
     response:
-      "We don't have an online shop — everything is tailored to your needs.\n\n📞 Contact us with your requirements (phone or email)\n📋 We provide a no-obligation quote\n🤝 Upon acceptance, we arrange delivery and assembly\n\nCall +47 333 65 580 or email mail@reolconsult.no.",
+      "We don't have an online shop — everything is tailored to your needs.\n\nContact us with your requirements (phone or email)\nWe provide a no-obligation quote\nUpon acceptance, we arrange delivery and assembly\n\nCall {phone_intl} or email {email}.",
     followUps: [
       { label: "Contact us", message: "How can I contact you?" },
       { label: "Delivery", message: "How do you deliver?" },
@@ -476,7 +478,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "time", "schedule",
     ],
     response:
-      "⏰ Opening hours:\n\nMonday–Friday: 08:00–16:00\nSaturday/Sunday: Closed\n\nWe welcome visits by appointment. Call +47 333 65 580 to schedule!\n\n📍 We have a 350 sqm showroom at Smiløkka 7, Vear.",
+      "⏰ Opening hours:\n\nMonday–Friday: 08:00–16:00\nSaturday/Sunday: Closed\n\nWe welcome visits by appointment. Call {phone_intl} to schedule!\n\nWe have a 350 sqm showroom at {visit_address}.",
     followUps: [
       { label: "Visit showroom", message: "Can I visit the showroom?" },
       { label: "Contact us", message: "How can I contact you?" },
@@ -490,7 +492,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "map", "vear", "tønsberg",
     ],
     response:
-      "You can reach us here:\n\n📞 Main line: +47 333 65 580\n📞 Agnete H. Bechmann: +47 450 07 322\n📞 Tore Aas-Kristiansen: +47 982 04 323\n📧 Email: mail@reolconsult.no\n📍 Visiting address: Smiløkka 7, 3173 Vear (Tønsberg, Norway)\n📬 Postal address: Postboks 1, 3108 Vear",
+      "You can reach us here:\n\nMain line: {phone_intl}\nAgnete H. Bechmann: +47 450 07 322 — agh@reolconsult.no\nTore Aas-Kristiansen: +47 982 04 323 — tk@reolconsult.no\nGeneral: {email}\nVisiting address: {visit_address} (Tønsberg, Norway)\nPostal address: {postal_address}",
     followUps: [
       { label: "Visit showroom", message: "Can I visit the showroom?" },
       { label: "Opening hours", message: "When are you open?" },
@@ -504,7 +506,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "demonstration", "show", "tour",
     ],
     response:
-      "🏢 We have a 350 sqm showroom at Smiløkka 7, Vear!\n\nCome see and touch the products. We'll show you around and help find the right solution.\n\n📞 Book in advance: call +47 333 65 580\n⏰ Monday–Friday: 08:00–16:00",
+      "We have a 350 sqm showroom at {visit_address}!\n\nCome see and touch the products. We'll show you around and help find the right solution.\n\nBook in advance: call {phone_intl}\n⏰ Monday–Friday: 08:00–16:00",
     followUps: [
       { label: "Opening hours", message: "When are you open?" },
       { label: "Contact us", message: "How can I contact you?" },
@@ -601,7 +603,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "desk", "desks", "whiteboard", "classroom", "changing table",
     ],
     response:
-      "We supply schools and kindergartens:\n\n🏫 School: chairs, desks, tables, benches, whiteboards, student lockers\n👶 Kindergarten: children's chairs, tables, open shelving, mattresses, changing tables\n\nDurable products built to withstand heavy use.",
+      "We supply schools and kindergartens:\n\nSchool: chairs, desks, tables, benches, whiteboards, student lockers\nKindergarten: children's chairs, tables, open shelving, mattresses, changing tables\n\nDurable products built to withstand heavy use.",
     followUps: [
       { label: "Get a quote", message: "I'd like a quote" },
       { label: "Lockers", message: "Do you have locker cabinets?" },
@@ -614,7 +616,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "recycled", "sustainability", "green", "budget",
     ],
     response:
-      "♻️ We regularly receive used pallet racking and fittings at great prices!\n\n• Used pallet racking: from approx. NOK 2,000/section\n• Selection varies — call to hear what we have in stock\n• Good condition, quality checked\n• Affordable option for startups or expansions\n\n📞 Call +47 333 65 580 or email mail@reolconsult.no.",
+      " We regularly receive used pallet racking and fittings at great prices!\n\n• Used pallet racking: from approx. NOK 2,000/section\n• Selection varies — call to hear what we have in stock\n• Good condition, quality checked\n• Affordable option for startups or expansions\n\nCall {phone_intl} or email {email}.",
     followUps: [
       { label: "Contact us", message: "How can I contact you?" },
       { label: "Warehouse", message: "Tell me about warehouse fittings" },
@@ -627,7 +629,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "regulation", "approved", "rack inspection",
     ],
     response:
-      "🛡️ We perform HSE safety inspections of pallet and warehouse racking.\n\nMandatory for businesses with warehouse racking!\n\n• Visual inspection of all rack components\n• Check of uprights, beams, base plates and bolts\n• Damage marking: green (OK), yellow (monitor), red (replace)\n• Written report with recommendations\n• We cover all of Eastern Norway\n\n📞 Contact us at +47 333 65 580 to schedule an inspection!",
+      " We perform HSE safety inspections of pallet and warehouse racking.\n\nMandatory for businesses with warehouse racking!\n\n• Visual inspection of all rack components\n• Check of uprights, beams, base plates and bolts\n• Damage marking: green (OK), yellow (monitor), red (replace)\n• Written report with recommendations\n• We cover all of Eastern Norway\n\nContact us at {phone_intl} to schedule an inspection!",
     followUps: [
       { label: "Contact us", message: "How can I contact you?" },
       { label: "Warehouse", message: "Tell me about warehouse fittings" },
@@ -641,7 +643,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "delivery time",
     ],
     response:
-      "🚚 We deliver across all of Norway with turnkey solutions:\n\n• Project planning and design\n• Drawings and 3D visualization\n• Delivery with our own transport\n• Professional on-site assembly\n\n⏱️ Delivery time:\n• In-stock items: 1–2 weeks\n• Made-to-order: 3–6 weeks\n• Custom-made: 4–8 weeks\n\nShipping is calculated based on volume and distance.",
+      "We deliver across all of Norway with turnkey solutions:\n\n• Project planning and design\n• Drawings and 3D visualization\n• Delivery with our own transport\n• Professional on-site assembly\n\n⏱ Delivery time:\n• In-stock items: 1–2 weeks\n• Made-to-order: 3–6 weeks\n• Custom-made: 4–8 weeks\n\nShipping is calculated based on volume and distance.",
     followUps: [
       { label: "Get a quote", message: "I'd like a quote" },
       { label: "Order", message: "How do I place an order?" },
@@ -655,7 +657,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "reol-consult", "reolconsult",
     ],
     response:
-      "Reol-Consult AS was established in November 1984 — over 40 years of experience!\n\n🏢 Located at Vear in Tønsberg, Norway\n📐 350 sqm showroom\n🇳🇴 Supplying businesses across Norway\n👨‍🔧 A team of specialists with deep expertise\n\nWe are Eastern Norway's largest supplier of shop, warehouse, workshop, office, archive, and locker fittings — from concept to finished product.\n\nOrg. no.: 955 273 117",
+      "Reol-Consult AS was established in November 1984.\n\nLocated at Vear in Tønsberg, Norway\n350 sqm showroom\nSupplying businesses across Norway\n\nWe deliver fittings for shops, warehouses, workshops, offices, archives and locker rooms — from first drawing to fully installed.\n\nOrg. no.: 955 273 117",
     followUps: [
       { label: "Contact us", message: "How can I contact you?" },
       { label: "See products", message: "What products do you offer?" },
@@ -670,7 +672,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "solution", "solutions",
     ],
     response:
-      "We offer interior fitting solutions in:\n\n🏪 Shop fittings — gondolas, wall systems, checkout counters\n📦 Warehouse fittings — pallet racking up to 30m, small parts shelving, mezzanines\n🔧 Workshop — workbenches, tool cabinets, packing tables\n🏢 Office — desks, chairs, partition walls\n🚿 Lockers — locker cabinets, charging cabinets, school lockers\n🏫 School & kindergarten — desks, chairs, whiteboards, changing tables\n\nWe also have used sales! Ask about a specific category for more details.",
+      "We offer interior fitting solutions in:\n\nShop fittings — gondolas, wall systems, checkout counters\nWarehouse fittings — pallet racking up to 30m, small parts shelving, mezzanines\nWorkshop — workbenches, tool cabinets, packing tables\nOffice — desks, chairs, partition walls\nLockers — locker cabinets, charging cabinets, school lockers\nSchool & kindergarten — desks, chairs, whiteboards, changing tables\n\nWe also have used sales! Ask about a specific category for more details.",
     followUps: [
       { label: "Shop", message: "Tell me about shop fittings" },
       { label: "Warehouse", message: "Tell me about warehouse fittings" },
@@ -684,7 +686,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "advisor", "switchboard",
     ],
     response:
-      "Our contact persons:\n\n👩 Agnete H. Bechmann – Sales & advisory\nPhone: +47 450 07 322\n\n👨 Tore Aas-Kristiansen – Sales & advisory\nPhone: +47 982 04 323\n\n📞 Main line: +47 333 65 580\n📧 mail@reolconsult.no",
+      "Our contact persons:\n\nAgnete H. Bechmann – Sales & advisory\nPhone: +47 450 07 322\nEmail: agh@reolconsult.no\n\nTore Aas-Kristiansen – Sales & advisory\nPhone: +47 982 04 323\nEmail: tk@reolconsult.no\n\nMain line: {phone_intl}\nGeneral: {email}",
     followUps: [
       { label: "Send message", message: "What is the email address?" },
       { label: "Visit", message: "Can I visit the showroom?" },
@@ -697,7 +699,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "greetings",
     ],
     response:
-      "Hi! 👋 Welcome to Reol-Consult. How can I help you? You can ask about products, prices, stock status, or anything else!",
+      "Hi! Welcome to Reol-Consult. How can I help you? You can ask about products, prices, stock status, or anything else!",
     followUps: [
       { label: "Products", message: "What products do you offer?" },
       { label: "Contact us", message: "How can I contact you?" },
@@ -711,7 +713,7 @@ const knowledgeBase_en: KnowledgeEntry[] = [
       "thanks", "thank", "great", "awesome", "nice", "perfect", "wonderful",
     ],
     response:
-      "You're welcome! If you have more questions, just ask. You can also reach us at +47 333 65 580 😊",
+      "You're welcome! If you have more questions, just ask. You can also reach us at {phone_intl}.",
     followUps: [
       { label: "Products", message: "What products do you offer?" },
       { label: "Contact us", message: "How can I contact you?" },
@@ -740,12 +742,12 @@ const UI: Record<Lang, {
   stockFallback: string;
 }> = {
   nb: {
-    headerTitle: "Reol-Consult Hjelp",
+    headerTitle: "Spør oss",
     headerSubConnected: "Tilkoblet produktdatabase",
-    headerSubDefault: "Vi svarer på det meste!",
+    headerSubDefault: "Vi svarer på det meste",
     inputPlaceholder: "Skriv en melding...",
-    initialMessage: "Hei! 👋 Jeg er Reol-Consults digitale assistent. Spør meg om produkter, priser, lagerstatus eller noe annet!",
-    fallbackResponse: "Beklager, det har jeg ikke nok info om ennå. Men teamet vårt hjelper deg gjerne! Ring 333 65 580 eller send e-post til mail@reolconsult.no.",
+    initialMessage: "Hei! Jeg er Reol-Consults digitale assistent. Spør meg om produkter, priser, lagerstatus eller noe annet!",
+    fallbackResponse: "Beklager, det har jeg ikke nok info om ennå. Men teamet vårt hjelper deg gjerne! Ring {phone} eller send e-post til {email}.",
     fallbackFollowUps: [
       { label: "Hva kan du hjelpe med?", message: "Hva kan du hjelpe meg med?" },
       { label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" },
@@ -757,20 +759,20 @@ const UI: Record<Lang, {
       { label: "Bruktsalg", message: "Har dere brukte reoler?" },
       { label: "Besøk utstilling", message: "Kan jeg besøke utstillingen?" },
     ],
-    ctaFooter: "\n\nKontakt oss på 333 65 580 for eksakt tilbud!",
+    ctaFooter: "\n\nKontakt oss på {phone} for eksakt tilbud!",
     openChat: "Åpne chat",
     closeChat: "Lukk chat",
     sendMessage: "Send melding",
     stockOverviewIntro: "Her er lagerstatus for produktene våre:\n\n",
-    stockFallback: "Ring oss på 333 65 580 for oppdatert lagerstatus!",
+    stockFallback: "Ring oss på {phone} for oppdatert lagerstatus!",
   },
   en: {
-    headerTitle: "Reol-Consult Help",
+    headerTitle: "Ask us",
     headerSubConnected: "Connected to product database",
-    headerSubDefault: "We answer most questions!",
+    headerSubDefault: "We answer most questions",
     inputPlaceholder: "Type a message...",
-    initialMessage: "Hi! 👋 I'm Reol-Consult's digital assistant. Ask me about products, prices, stock status, or anything else!",
-    fallbackResponse: "Sorry, I don't have enough info about that yet. But our team is happy to help! Call +47 333 65 580 or email mail@reolconsult.no.",
+    initialMessage: "Hi! I'm Reol-Consult's digital assistant. Ask me about products, prices, stock status, or anything else!",
+    fallbackResponse: "Sorry, I don't have enough info about that yet. But our team is happy to help! Call {phone_intl} or email {email}.",
     fallbackFollowUps: [
       { label: "What can you help with?", message: "What can you help me with?" },
       { label: "Contact us", message: "How can I contact you?" },
@@ -782,12 +784,12 @@ const UI: Record<Lang, {
       { label: "Used sales", message: "Do you have used racking?" },
       { label: "Visit showroom", message: "Can I visit the showroom?" },
     ],
-    ctaFooter: "\n\nContact us at +47 333 65 580 for an exact quote!",
+    ctaFooter: "\n\nContact us at {phone_intl} for an exact quote!",
     openChat: "Open chat",
     closeChat: "Close chat",
     sendMessage: "Send message",
     stockOverviewIntro: "Here's the current stock status:\n\n",
-    stockFallback: "Call us at +47 333 65 580 for updated stock status!",
+    stockFallback: "Call us at {phone_intl} for updated stock status!",
   },
 };
 
@@ -1322,6 +1324,7 @@ function findHardcodedResponse(input: string, lang: Lang): {
 /* ───────────────── component ─────────────────────── */
 
 export default function Chatbot() {
+  const { settings } = useSite();
   const [lang, setLang] = useState<Lang>("nb");
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -1623,13 +1626,15 @@ export default function Chatbot() {
                           : "rounded-bl-md border border-border bg-white text-text-dark"
                       }`}
                     >
-                      {msg.text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
-                        part.startsWith("**") && part.endsWith("**") ? (
-                          <strong key={i}>{part.slice(2, -2)}</strong>
-                        ) : (
-                          <span key={i}>{part}</span>
-                        )
-                      )}
+                      {fillPlaceholders(msg.text, settings)
+                        .split(/(\*\*[^*]+\*\*)/)
+                        .map((part, i) =>
+                          part.startsWith("**") && part.endsWith("**") ? (
+                            <strong key={i}>{part.slice(2, -2)}</strong>
+                          ) : (
+                            <span key={i}>{part}</span>
+                          ),
+                        )}
                     </div>
                   </div>
                 ))}

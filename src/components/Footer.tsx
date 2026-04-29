@@ -1,13 +1,23 @@
 import Link from "next/link";
 import Image from "next/image";
+import {
+  getCurrentSite,
+  getSiteSettingsOrFallback,
+  formatPhoneLink,
+} from "@/lib/site";
 
-export default function Footer() {
+export default async function Footer() {
+  const site = await getCurrentSite();
+  const settings = await getSiteSettingsOrFallback(site?.id ?? null);
+  const siteName = site?.name ?? "Reol-Consult AS";
+  const orgNumber = site?.org_number ?? "955 273 117";
+
   return (
     <footer className="bg-bg-light">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         {/* Logo */}
         <div className="mb-12">
-          <Image src="/logo.png" alt="Reolconsult" width={200} height={108} className="h-20 w-auto" />
+          <Image src="/logo.png" alt={siteName} width={200} height={108} className="h-20 w-auto" />
         </div>
 
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-12 lg:grid-cols-4">
@@ -17,17 +27,21 @@ export default function Footer() {
               Kontakt
             </h3>
             <ul className="space-y-3 text-sm text-text-dark/90">
-              <li>Smiløkka 7, 3173 Vear</li>
-              <li>
-                <a href="tel:+4733365580" className="transition-colors duration-200 hover:text-accent">
-                  Tlf: 333 65 580
-                </a>
-              </li>
-              <li>
-                <a href="mailto:mail@reolconsult.no" className="transition-colors duration-200 hover:text-accent">
-                  mail@reolconsult.no
-                </a>
-              </li>
+              {settings.visit_address && <li>{settings.visit_address}</li>}
+              {settings.phone && (
+                <li>
+                  <a href={formatPhoneLink(settings.phone)} className="transition-colors duration-200 hover:text-accent">
+                    Tlf: {settings.phone}
+                  </a>
+                </li>
+              )}
+              {settings.email_general && (
+                <li>
+                  <a href={`mailto:${settings.email_general}`} className="transition-colors duration-200 hover:text-accent">
+                    {settings.email_general}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -105,15 +119,10 @@ export default function Footer() {
                   Kontakt oss
                 </Link>
               </li>
-              <li>Org.nr: 955 273 117</li>
+              <li>Org.nr: {orgNumber}</li>
               <li>
                 <Link href="/personvern" className="transition-colors duration-200 hover:text-accent">
                   Personvern
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin" className="transition-colors duration-200 hover:text-accent">
-                  Admin
                 </Link>
               </li>
             </ul>
@@ -121,7 +130,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-14 pt-8 text-center text-xs text-text-dark/40">
-          &copy; {new Date().getFullYear()} Reolconsult AS
+          &copy; {new Date().getFullYear()} {siteName}
         </div>
       </div>
     </footer>

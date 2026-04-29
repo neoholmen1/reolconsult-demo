@@ -33,7 +33,7 @@ export default function CookieBanner() {
     >
       <div className="w-full max-w-[500px] rounded-2xl bg-white p-6 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
         <p className="text-sm leading-relaxed text-text-dark/80">
-          Vi bruker informasjonskapsler for å forbedre din opplevelse.
+          Vi bruker informasjonskapsler til statistikk og funksjon. Du velger selv nivå.
         </p>
         <div className="mt-4 flex gap-3">
           <button

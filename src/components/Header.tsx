@@ -96,14 +96,14 @@ export default function Header() {
           }`}
         >
           <Link href="/">
-            <Image src="/logo.png" alt="Reolconsult" width={223} height={121} className="w-[223px] h-auto" priority />
+            <Image src="/logo.png" alt="Reol-Consult" width={223} height={121} className="w-[223px] h-auto" priority />
           </Link>
         </div>
 
         {/* Mobile: single row */}
         <div className="flex h-[80px] items-center justify-between md:hidden">
           <Link href="/" className="shrink-0">
-            <Image src="/logo.png" alt="Reolconsult" width={111} height={60} className="h-[60px] w-auto" priority />
+            <Image src="/logo.png" alt="Reol-Consult" width={111} height={60} className="h-[60px] w-auto" priority />
           </Link>
           <div className="flex items-center gap-3">
             <Link

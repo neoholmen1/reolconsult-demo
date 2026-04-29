@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "motion/react";
 import Image from "next/image";
+import { useSite } from "@/components/SiteProvider";
+import { formatPhoneLink } from "@/lib/site";
 
 const images = [
   { src: "https://reolconsult.no/wp-content/uploads/2022/11/Hekta-Pa-Tur-2-scaled.jpg", alt: "Pallreoler i lager" },
@@ -14,9 +16,28 @@ const images = [
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-export default function Hero() {
+export type HeroData = {
+  eyebrow?: string | null;
+  title?: string | null;
+  subtitle?: string | null;
+  primaryLabel?: string | null;
+  primaryHref?: string | null;
+  secondaryLabel?: string | null;
+  secondaryHref?: string | null;
+};
+
+export default function Hero({ heroData }: { heroData?: HeroData }) {
+  const { settings } = useSite();
   const [current, setCurrent] = useState(0);
   const [kenBurnsKey, setKenBurnsKey] = useState(0);
+
+  const eyebrow = heroData?.eyebrow || "Siden 1984";
+  const title = heroData?.title || "Alt til ditt\nlager, butikk\nog kontor";
+  const subtitle =
+    heroData?.subtitle ||
+    "Vi leverer innredning til butikk, lager, verksted, kontor, arkiv og garderobe — fra første tegning til ferdig montert. Bredt sortiment, og 350 kvm utstilling i Tønsberg.";
+  const primaryLabel = heroData?.primaryLabel || "Utforsk produkter";
+  const secondaryLabel = heroData?.secondaryLabel || "Ring oss";
 
   const next = useCallback(() => {
     setCurrent((prev) => (prev + 1) % images.length);
@@ -65,21 +86,17 @@ export default function Hero() {
               transition={{ duration: 0.6, delay: 0.1, ease }}
               className="text-sm font-semibold uppercase tracking-[0.2em] text-accent"
             >
-              Siden 1984
+              {eyebrow}
             </motion.p>
 
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2, ease }}
-              className="mt-5 text-[2rem] font-bold tracking-tight text-primary sm:text-5xl md:text-6xl lg:text-[4.25rem]"
+              className="mt-5 text-[2rem] font-bold tracking-tight text-primary sm:text-5xl md:text-6xl lg:text-[4.25rem] whitespace-pre-line"
               style={{ lineHeight: 1.05 }}
             >
-              Alt til ditt
-              <br />
-              lager, butikk
-              <br />
-              og kontor
+              {title}
             </motion.h1>
 
             <motion.p
@@ -88,9 +105,7 @@ export default function Hero() {
               transition={{ duration: 0.6, delay: 0.4, ease }}
               className="mt-6 sm:mt-8 max-w-md text-base sm:text-lg leading-relaxed text-text-muted"
             >
-              Vi har Østlandets største produktsortiment innen butikk, lager,
-              verksted, kontor, arkiv og garderobe. Vi tilbyr effektive og
-              konkurransedyktige løsninger fra idé til sluttprodukt.
+              {subtitle}
             </motion.p>
 
             <motion.div
@@ -103,19 +118,19 @@ export default function Hero() {
                 onClick={() => document.getElementById("kategorier")?.scrollIntoView({ behavior: "smooth" })}
                 className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm sm:px-8 sm:py-4 sm:text-base font-semibold text-white transition-all duration-200 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(220,38,38,0.25)] active:translate-y-[1px]"
               >
-                Utforsk produkter
+                {primaryLabel}
                 <svg className="h-5 w-5 transition-transform duration-300 group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
                 </svg>
               </button>
               <a
-                href="tel:+4733365580"
+                href={formatPhoneLink(settings.phone)}
                 className="inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3.5 text-sm sm:px-8 sm:py-4 sm:text-base font-medium text-primary transition-all duration-200 hover:bg-primary hover:text-white active:translate-y-[1px]"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                 </svg>
-                Ring oss
+                {secondaryLabel}
               </a>
             </motion.div>
 

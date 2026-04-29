@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  "https://pwkdqyczahdlsragcoep.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3a2RxeWN6YWhkbHNyYWdjb2VwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MjYxMjYsImV4cCI6MjA4ODIwMjEyNn0.eMSnoDwcrtfbG_Aq6OB0zccgC7rRzckAgwh7-42MeTA"
-);
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SITE_SLUG = process.env.NEXT_PUBLIC_SITE_SLUG ?? "reolconsult";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function parseTxt(buffer: Buffer): Promise<string> {
   return buffer.toString("utf-8");
@@ -47,11 +48,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Ikke autorisert" }, { status: 401 });
   }
 
-  // Verify the token with Supabase
+  // Verify the token with Supabase. Vi bygger en klient som er autentisert som
+  // brukeren slik at RLS-policy-ene gjelder for innsetting nedenfor.
   const token = authHeader.replace("Bearer ", "");
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+  const { data: { user }, error: authError } = await userClient.auth.getUser();
   if (authError || !user) {
     return NextResponse.json({ error: "Ugyldig token" }, { status: 401 });
+  }
+
+  // Slå opp current site (én site per deploy i fase 1).
+  const { data: site, error: siteError } = await supabase
+    .from("sites")
+    .select("id")
+    .eq("slug", SITE_SLUG)
+    .eq("active", true)
+    .maybeSingle();
+
+  if (siteError || !site) {
+    return NextResponse.json({ error: "Fant ikke aktiv site" }, { status: 500 });
   }
 
   const formData = await request.formData();
@@ -98,9 +115,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Kunne ikke lese innhold fra filen" }, { status: 400 });
     }
 
-    const { data, error } = await supabase
+    // Bruk userClient slik at RLS-sjekken (has_site_access) gjelder.
+    const { data, error } = await userClient
       .from("chatbot_documents")
       .insert({
+        site_id: site.id,
         filename,
         content: content.trim(),
         file_type: ext,
@@ -111,7 +130,10 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { error: error.message || "Kunne ikke lagre dokument. Mangler du tilgang?" },
+        { status: 403 },
+      );
     }
 
     return NextResponse.json({ success: true, document: data });

@@ -1,6 +1,12 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-export const supabase = createClient(
-  'https://pwkdqyczahdlsragcoep.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3a2RxeWN6YWhkbHNyYWdjb2VwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MjYxMjYsImV4cCI6MjA4ODIwMjEyNn0.eMSnoDwcrtfbG_Aq6OB0zccgC7rRzckAgwh7-42MeTA'
-)
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!url || !anonKey) {
+  throw new Error(
+    "Mangler NEXT_PUBLIC_SUPABASE_URL eller NEXT_PUBLIC_SUPABASE_ANON_KEY i miljøet. Kopier .env.local.example til .env.local.",
+  );
+}
+
+export const supabase = createClient(url, anonKey);

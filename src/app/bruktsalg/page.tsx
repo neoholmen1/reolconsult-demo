@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { getCurrentSite, getSiteSettingsOrFallback, formatPhoneLink } from "@/lib/site";
+import { getPageSections, getSectionField } from "@/lib/cms";
 
 export const metadata: Metadata = {
   title: "Bruktsalg – Reol-Consult AS",
@@ -28,8 +31,8 @@ const fordeler = [
     ),
   },
   {
-    title: "Spar opptil 50 %",
-    text: "Brukte reoler og innredning gir deg god kvalitet til en brøkdel av prisen. Perfekt for oppstartsbedrifter og utvidelser.",
+    title: "Rimeligere alternativ",
+    text: "Brukte reoler og innredning gir deg god kvalitet til en lavere pris. Aktuelt for oppstartsbedrifter og utvidelser.",
     icon: (
       <svg
         className="h-6 w-6"
@@ -88,8 +91,8 @@ const fordeler = [
 
 const kategorier = [
   {
-    title: "Pallereol / lagerreol",
-    desc: "Brukte pallereolsystemer i forskjellige størrelser og bæreevner.",
+    title: "Pallreol / lagerreol",
+    desc: "Brukte pallreolsystemer i forskjellige størrelser og bæreevner.",
   },
   {
     title: "Småvarereol",
@@ -109,30 +112,41 @@ const kategorier = [
   },
   {
     title: "Garderobeinnredning",
-    desc: "Garderobeskap og benker for garderober og omkleidningsrom.",
+    desc: "Garderobeskap og benker for garderober og omkledningsrom.",
   },
 ];
 
-export default function Bruktsalg() {
+export default async function Bruktsalg() {
+  const site = await getCurrentSite();
+  const [settings, sections] = await Promise.all([
+    getSiteSettingsOrFallback(site?.id ?? null),
+    site ? getPageSections(site.id, "bruktsalg") : Promise.resolve([]),
+  ]);
+
+  const badge = getSectionField(sections, "intro", "badge", "Spar penger");
+  const introTitle = getSectionField(sections, "intro", "title", "Brukte reoler og\ninnredning til gode priser");
+  const introBody = getSectionField(
+    sections,
+    "intro",
+    "body",
+    "Vi har alltid et utvalg av brukte reoler, butikkinnredning, lagerinnredning og kontormøbler på lager. Alt er kvalitetskontrollert og klar for nytt bruk — til en brøkdel av nyprisen.",
+  );
+  const fordelerTitle = getSectionField(sections, "fordeler", "title", "Hvorfor kjøpe brukt?");
+
   return (
     <div>
-      {/* Hero */}
       <section className="bg-bg-light pt-8 pb-16 sm:pt-20 sm:pb-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
             <div className="inline-flex items-center gap-2 rounded-full border border-green-600/20 bg-green-600/10 px-4 py-1.5 text-sm font-semibold text-green-700">
               <span className="h-2 w-2 rounded-full bg-green-600" />
-              Spar penger
+              {badge}
             </div>
-            <h1 className="mt-6 text-3xl font-bold leading-tight tracking-tight text-primary sm:text-4xl md:text-5xl">
-              Brukte reoler og
-              <br />
-              innredning til gode priser
+            <h1 className="mt-6 text-3xl font-bold leading-tight tracking-tight text-primary sm:text-4xl md:text-5xl whitespace-pre-line">
+              {introTitle}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-text-muted">
-              Vi har alltid et utvalg av brukte reoler, butikkinnredning,
-              lagerinnredning og kontormøbler på lager. Alt er kvalitetskontrollert
-              og klar for nytt bruk — til en brøkdel av nyprisen.
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-text-muted whitespace-pre-line">
+              {introBody}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <a
@@ -155,10 +169,10 @@ export default function Bruktsalg() {
                 </svg>
               </a>
               <a
-                href="tel:+4733365580"
+                href={formatPhoneLink(settings.phone)}
                 className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary/20 px-7 py-3.5 font-semibold text-primary transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 active:translate-y-[1px]"
               >
-                Ring 333 65 580
+                Ring {settings.phone ?? "33 36 55 80"}
               </a>
             </div>
           </AnimateOnScroll>
@@ -170,7 +184,7 @@ export default function Bruktsalg() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
             <h2 className="text-center text-3xl font-bold tracking-tight text-primary md:text-4xl">
-              Hvorfor kjøpe brukt?
+              {fordelerTitle}
             </h2>
           </AnimateOnScroll>
 
@@ -229,8 +243,57 @@ export default function Bruktsalg() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Eksempler */}
       <section className="bg-white py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <AnimateOnScroll>
+            <h2 className="text-2xl font-bold tracking-tight text-primary md:text-3xl">
+              Eksempler på det vi har hatt inne
+            </h2>
+            <p className="mt-3 max-w-2xl text-text-muted">
+              Utvalget endrer seg fra uke til uke. Ring {settings.phone ?? "33 36 55 80"} så sier vi
+              hva vi har akkurat nå.
+            </p>
+          </AnimateOnScroll>
+
+          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
+            {[
+              {
+                src: "https://reolconsult.no/wp-content/uploads/2022/11/Pallreol-1.jpg",
+                label: "Pallreoler",
+              },
+              {
+                src: "https://reolconsult.no/wp-content/uploads/2022/11/Smavarereol-15-scaled.jpg",
+                label: "Småvarereoler",
+              },
+              {
+                src: "https://reolconsult.no/wp-content/uploads/2022/11/Nettinghyller-4.jpg",
+                label: "Nettinghyller",
+              },
+            ].map((item, i) => (
+              <AnimateOnScroll key={item.label} delay={i * 0.06}>
+                <div className="overflow-hidden rounded-2xl border border-border bg-white">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-bg-light">
+                    <Image
+                      src={item.src}
+                      alt={item.label}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <p className="px-5 py-4 text-sm font-medium text-primary">
+                    {item.label}
+                  </p>
+                </div>
+              </AnimateOnScroll>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-bg-light py-16 sm:py-24">
         <div className="mx-auto max-w-3xl px-6 text-center">
           <AnimateOnScroll>
             <h2 className="text-3xl font-bold tracking-tight text-primary md:text-4xl">
@@ -248,10 +311,10 @@ export default function Bruktsalg() {
                 Kontakt oss
               </a>
               <a
-                href="tel:+4733365580"
+                href={formatPhoneLink(settings.phone)}
                 className="inline-flex items-center gap-2 rounded-full border-2 border-primary/20 px-7 py-3.5 font-semibold text-primary transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 active:translate-y-[1px]"
               >
-                Ring 333 65 580
+                Ring {settings.phone ?? "33 36 55 80"}
               </a>
             </div>
           </AnimateOnScroll>

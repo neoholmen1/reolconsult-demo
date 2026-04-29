@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { getCurrentSite, getSiteSettingsOrFallback, formatPhoneLink } from "@/lib/site";
+import { getPageSections, getSectionField } from "@/lib/cms";
+
+export const metadata: Metadata = {
+  title: "Kataloger – Reol-Consult AS",
+  description:
+    "Bla gjennom produktkataloger fra Reol-Consult digitalt: butikkinnredning, disker, hjul, miljøsikring og verkstedinnredning.",
+};
 
 const kataloger = [
   {
@@ -14,22 +23,17 @@ const kataloger = [
   {
     title: "Hjulkatalog",
     description: "Hjul og trinser for alle bruksområder.",
-    href: "http://viewer.zmags.com/publication/905cc178#/905cc178/1",
-  },
-  {
-    title: "Miljøsikring",
-    description: "Produkter for miljøsikring og oppsamling.",
-    href: "http://viewer.zmags.com/publication/76b6daa8#/76b6daa8/1",
+    href: "https://viewer.zmags.com/publication/905cc178#/905cc178/1",
   },
   {
     title: "Miljø & Lastsikring",
-    description: "Utstyr for sikker lasting og miljøvern.",
-    href: "http://viewer.zmags.com/publication/76b6daa8#/76b6daa8/1",
+    description: "Oppsamlingskar, spillbarrierer og utstyr for sikker lasting.",
+    href: "https://viewer.zmags.com/publication/76b6daa8#/76b6daa8/1",
   },
   {
     title: "Gigant Arbeidsplasskatalog",
     description: "Arbeidsbord, verktøyskap og verkstedinnredning.",
-    href: "http://viewer.zmags.com/publication/f98e993c#/f98e993c/1",
+    href: "https://viewer.zmags.com/publication/f98e993c#/f98e993c/1",
   },
 ];
 
@@ -41,22 +45,40 @@ function PdfIcon() {
   );
 }
 
-export default function Kataloger() {
+export default async function Kataloger() {
+  const site = await getCurrentSite();
+  const [settings, sections] = await Promise.all([
+    getSiteSettingsOrFallback(site?.id ?? null),
+    site ? getPageSections(site.id, "kataloger") : Promise.resolve([]),
+  ]);
+
+  const eyebrow = getSectionField(sections, "intro", "eyebrow", "Dokumenter");
+  const introTitle = getSectionField(sections, "intro", "title", "Kataloger");
+  const introBody = getSectionField(
+    sections,
+    "intro",
+    "body",
+    "Bla gjennom våre produktkataloger digitalt, eller kontakt oss for å få tilsendt trykte brosjyrer.",
+  );
+  const ctaTitle = getSectionField(sections, "cta_final", "title", "Ønsker du trykte brosjyrer?");
+  const ctaBody = getSectionField(
+    sections,
+    "cta_final",
+    "body",
+    "Kontakt oss for å få tilsendt produktbrosjyrer i posten.",
+  );
+
   return (
     <div>
-      {/* Hero */}
       <section className="pb-16 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimateOnScroll className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
-              Dokumenter
-            </p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">{eyebrow}</p>
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-primary sm:text-4xl md:text-5xl">
-              Kataloger
+              {introTitle}
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-text-muted">
-              Bla gjennom våre produktkataloger digitalt, eller kontakt oss for å
-              få tilsendt trykte brosjyrer.
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-text-muted whitespace-pre-line">
+              {introBody}
             </p>
           </AnimateOnScroll>
         </div>
@@ -98,21 +120,17 @@ export default function Kataloger() {
       <section className="bg-white py-24 sm:py-32">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <AnimateOnScroll>
-            <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-              Ønsker du trykte brosjyrer?
-            </h2>
-            <p className="mt-4 text-lg text-text-muted">
-              Kontakt oss for å få tilsendt produktbrosjyrer i posten.
-            </p>
+            <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">{ctaTitle}</h2>
+            <p className="mt-4 text-lg text-text-muted whitespace-pre-line">{ctaBody}</p>
             <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
               <a
-                href="tel:+4733365580"
+                href={formatPhoneLink(settings.phone)}
                 className="w-full sm:w-auto rounded-full bg-accent px-8 py-4 text-center text-base font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
               >
-                Ring 333 65 580
+                Ring {settings.phone ?? "33 36 55 80"}
               </a>
               <a
-                href="mailto:mail@reolconsult.no?subject=Jeg%20%C3%B8nsker%20tilsendt%20en%20produktbrosjyre"
+                href={`mailto:${settings.email_general ?? "mail@reolconsult.no"}?subject=${encodeURIComponent("Jeg ønsker tilsendt en produktbrosjyre")}`}
                 className="w-full sm:w-auto rounded-full border border-primary/20 px-8 py-4 text-center text-base font-semibold text-primary transition-all duration-300 hover:bg-primary hover:text-white active:translate-y-[1px]"
               >
                 Send e-post

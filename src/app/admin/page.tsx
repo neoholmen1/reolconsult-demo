@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import {
+  getCurrentSite,
+  getSiteAccessForCurrentUser,
+  type Site,
+  type SiteRole,
+  type SiteSettings,
+} from "@/lib/site";
+import { revalidatePublicSite } from "@/app/actions/revalidate";
 import type { User } from "@supabase/supabase-js";
 
 interface Variant {
@@ -73,10 +82,10 @@ const DEFAULTS: Omit<Category, "id">[] = [
   { category: "HMS Sikkerhetskontroll", category_type: "tjeneste", description: "Lovpålagt kontroll av pallreoler og lagerinnredning. Visuell inspeksjon, skaderapport med grønn/gul/rød merking.", variants: [], discounts: [], extra_info: "Fra 2.500 kr per inspeksjon. Vi dekker hele Østlandet.", updated_at: "" },
   { category: "Levering & Montering", category_type: "tjeneste", description: "Vi leverer over hele Norge. Lagerførte varer: 1-2 uker. Bestillingsvarer: 3-6 uker. Spesialtilpasset: 4-8 uker. Inkluderer prosjektering, levering og profesjonell montering.", variants: [], discounts: [], extra_info: "Frakt beregnes ut fra volum og distanse. Gratis befaring.", updated_at: "" },
   { category: "Prosjektering", category_type: "tjeneste", description: "Komplett prosjektering fra idé til ferdig sluttprodukt. Behovsanalyse, rådgivning, 3D-tegning og visualisering.", variants: [], discounts: [], extra_info: "Ta kontakt for uforpliktende prosjekteringsmøte.", updated_at: "" },
-  { category: "Bruktsalg", category_type: "salg", description: "Brukte pallreoler og innredning i god stand. Varierende utvalg.", variants: [{ name: "Brukte pallreoler", price: "fra 2000", stock: "varierer", delivery: "straks" }], discounts: [], extra_info: "Utvalget varierer. Ring 333 65 580 for å høre hva vi har inne.", updated_at: "" },
-  { category: "Om oss", category_type: "bedriftsinfo", description: "Reol-Consult AS ble etablert i november 1984. Vi holder til på Vear i Tønsberg med 350 kvm utstilling. Østlandets største leverandør innen butikk-, lager-, verksted-, kontor-, arkiv- og garderobeinnredning.", variants: [], discounts: [], extra_info: "", updated_at: "" },
-  { category: "Åpningstider", category_type: "bedriftsinfo", description: "Mandag-fredag: 08:00-16:00. Besøk etter avtale. Ring 333 65 580.", variants: [], discounts: [], extra_info: "", updated_at: "" },
-  { category: "Kontaktinfo", category_type: "bedriftsinfo", description: "Sentralbord: 333 65 580\nAgnete H. Bechmann: 450 07 322\nTore Aas-Kristiansen: 982 04 323\nE-post: mail@reolconsult.no\nBesøksadresse: Smiløkka 7, 3173 Vear", variants: [], discounts: [], extra_info: "", updated_at: "" },
+  { category: "Bruktsalg", category_type: "salg", description: "Brukte pallreoler og innredning i god stand. Varierende utvalg.", variants: [{ name: "Brukte pallreoler", price: "fra 2000", stock: "varierer", delivery: "straks" }], discounts: [], extra_info: "Utvalget varierer. Ring 33 36 55 80 for å høre hva vi har inne.", updated_at: "" },
+  { category: "Om oss", category_type: "bedriftsinfo", description: "Reol-Consult AS ble etablert i november 1984. Vi holder til på Vear i Tønsberg med 350 kvm utstilling. Vi leverer innredning til butikk, lager, verksted, kontor, arkiv og garderobe — fra første tegning til ferdig montert.", variants: [], discounts: [], extra_info: "", updated_at: "" },
+  { category: "Åpningstider", category_type: "bedriftsinfo", description: "Mandag-fredag: 08:00-16:00. Besøk etter avtale. Ring 33 36 55 80.", variants: [], discounts: [], extra_info: "", updated_at: "" },
+  { category: "Kontaktinfo", category_type: "bedriftsinfo", description: "Sentralbord: 33 36 55 80\nAgnete H. Bechmann: 450 07 322\nTore Aas-Kristiansen: 982 04 323\nE-post: mail@reolconsult.no\nBesøksadresse: Smiløkka 7, 3173 Vear", variants: [], discounts: [], extra_info: "", updated_at: "" },
   { category: "Utstilling/Showroom", category_type: "bedriftsinfo", description: "350 kvm showroom på Smiløkka 7, Vear. Se og ta på produktene. Ring for avtale.", variants: [], discounts: [], extra_info: "", updated_at: "" },
 ];
 
@@ -124,6 +133,13 @@ export default function AdminPage() {
   // Database migration state
   const [needsMigration, setNeedsMigration] = useState(false);
 
+  // Site-settings (innstillinger-fanen)
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const settingsFetchedRef = useRef(false);
+
   // Chatbot test
   const [testMessage, setTestMessage] = useState("");
   const [testMessages, setTestMessages] = useState<{ role: "user" | "bot"; text: string; followUps?: string[] }[]>([]);
@@ -131,6 +147,11 @@ export default function AdminPage() {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const activeCat = openCategory ? categories.find((c) => c.category === openCategory) ?? null : null;
+
+  // Site- og tilgangskontekst
+  const [site, setSite] = useState<Site | null>(null);
+  const [siteRole, setSiteRole] = useState<SiteRole | null>(null);
+  const [accessChecking, setAccessChecking] = useState(false);
 
   // Auth
   useEffect(() => {
@@ -140,9 +161,69 @@ export default function AdminPage() {
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      // Tilbakestill tilgang når brukeren bytter
+      if (!session?.user) {
+        setSiteRole(null);
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // Sjekk site-tilgang når bruker logger inn
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    setAccessChecking(true);
+    (async () => {
+      const currentSite = await getCurrentSite();
+      if (cancelled) return;
+      if (!currentSite) {
+        setSite(null);
+        setSiteRole(null);
+        setAccessChecking(false);
+        return;
+      }
+      setSite(currentSite);
+      const access = await getSiteAccessForCurrentUser(currentSite.id);
+      if (cancelled) return;
+      setSiteRole(access.role);
+      setAccessChecking(false);
+
+      // Hent site_settings én gang når vi har site
+      if (access.role && !settingsFetchedRef.current) {
+        settingsFetchedRef.current = true;
+        setSettingsLoading(true);
+        const { data } = await supabase
+          .from("site_settings")
+          .select("*")
+          .eq("site_id", currentSite.id)
+          .maybeSingle();
+        if (cancelled) return;
+        if (data) {
+          setSiteSettings({
+            ...data,
+            social: (data.social ?? {}) as Record<string, string>,
+          } as SiteSettings);
+        } else {
+          // Ingen rad ennå — start med tom rad knyttet til site
+          setSiteSettings({
+            site_id: currentSite.id,
+            phone: "",
+            email_general: "",
+            visit_address: "",
+            postal_address: "",
+            opening_hours: "",
+            social: {},
+            updated_at: "",
+          });
+        }
+        setSettingsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // Fetch knowledge
   useEffect(() => {
@@ -260,8 +341,49 @@ export default function AdminPage() {
       );
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+      await revalidatePublicSite();
     }
     setSaving(false);
+  }
+
+  // Save site_settings (innstillinger-fanen)
+  async function saveSiteSettings() {
+    if (!siteSettings || !site) return;
+    setSettingsSaving(true);
+    const payload = {
+      site_id: site.id,
+      phone: siteSettings.phone,
+      email_general: siteSettings.email_general,
+      visit_address: siteSettings.visit_address,
+      postal_address: siteSettings.postal_address,
+      opening_hours: siteSettings.opening_hours,
+      social: siteSettings.social ?? {},
+    };
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert(payload, { onConflict: "site_id" });
+    if (!error) {
+      setSettingsSaved(true);
+      setTimeout(() => setSettingsSaved(false), 3000);
+      await revalidatePublicSite();
+    } else {
+      alert("Kunne ikke lagre: " + error.message);
+    }
+    setSettingsSaving(false);
+  }
+
+  function updateSettingField<K extends keyof SiteSettings>(field: K, value: SiteSettings[K]) {
+    setSiteSettings((prev) => (prev ? { ...prev, [field]: value } : prev));
+  }
+
+  function updateSocial(key: string, value: string) {
+    setSiteSettings((prev) => {
+      if (!prev) return prev;
+      const social = { ...(prev.social ?? {}) };
+      if (value) social[key] = value;
+      else delete social[key];
+      return { ...prev, social };
+    });
   }
 
   // Upload
@@ -403,15 +525,15 @@ export default function AdminPage() {
       if (bestCat.variants.length > 0) { r += "\n\n**Varianter:**"; for (const v of bestCat.variants) { r += `\n• ${v.name}`; if (v.price) r += ` — ${v.price} kr`; if (v.stock) r += ` (${v.stock})`; if (v.delivery) r += ` [${v.delivery}]`; } }
       if (bestCat.discounts.length > 0) { r += "\n\n**Mengderabatt:**"; for (const d of bestCat.discounts) r += `\n• Over ${d.min_quantity} stk: ${d.price} kr/stk`; }
       if (bestCat.extra_info) r += `\n\n${bestCat.extra_info}`;
-      if (bestDocMatch && bestDocScore >= 2) r += `\n\n📄 Fra «${bestDocMatch.title}»:\n${bestDocMatch.snippet}`;
-      r += "\n\n📞 Kontakt oss på 333 65 580 for eksakt tilbud!";
+      if (bestDocMatch && bestDocScore >= 2) r += `\n\nFra «${bestDocMatch.title}»:\n${bestDocMatch.snippet}`;
+      r += "\n\nKontakt oss på 33 36 55 80 for eksakt tilbud!";
       const f: string[] = bestCat.category_type === "produkt" ? ["Priser", "Levering", "Kontakt"] : bestCat.category_type === "tjeneste" ? ["Bestille", "Kontakt"] : ["Produkter", "Kontakt"];
       return { text: r, followUps: f };
     }
     if (bestDocMatch && bestDocScore >= 2) {
-      return { text: `📄 Fra «${bestDocMatch.title}»:\n\n${bestDocMatch.snippet}\n\n📞 Kontakt oss på 333 65 580 for mer info!`, followUps: ["Produkter", "Kontakt", "Bruktsalg"] };
+      return { text: `Fra «${bestDocMatch.title}»:\n\n${bestDocMatch.snippet}\n\nKontakt oss på 33 36 55 80 for mer info!`, followUps: ["Produkter", "Kontakt", "Bruktsalg"] };
     }
-    return { text: "Beklager, jeg fant ikke noe relevant svar. Prøv f.eks. «pallreoler», «garderobeskap» eller «åpningstider».\n\n📞 Ring 333 65 580 eller mail@reolconsult.no.", followUps: ["Produkter", "Kontaktinfo", "Levering", "Bruktsalg"] };
+    return { text: "Beklager, jeg fant ikke noe relevant svar. Prøv f.eks. «pallreoler», «garderobeskap» eller «åpningstider».\n\nRing 33 36 55 80 eller mail@reolconsult.no.", followUps: ["Produkter", "Kontaktinfo", "Levering", "Bruktsalg"] };
   }
 
   function sendTestMessage(e: React.FormEvent) {
@@ -460,6 +582,36 @@ export default function AdminPage() {
     );
   }
 
+  // Sjekker tilgang
+  if (accessChecking) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#dc2626] border-t-transparent" />
+      </div>
+    );
+  }
+
+  // Ingen tilgang
+  if (!siteRole) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#fafafa] p-6">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
+          <h1 className="text-2xl font-bold text-[#171717]">Ingen tilgang</h1>
+          <p className="mt-3 text-sm text-[#737373]">
+            Brukeren <span className="font-medium text-[#404040]">{user.email}</span> har ikke
+            tilgang til {site?.name ?? "denne siten"}. Kontakt en administrator for å få tilgang.
+          </p>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="mt-6 w-full rounded-full bg-[#dc2626] py-3.5 font-semibold text-white transition-colors hover:bg-[#b91c1c]"
+          >
+            Logg ut
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Stats
   const filledCategories = categories.filter((c) => c.id !== null).length;
   const latestUpdate = categories
@@ -472,10 +624,21 @@ export default function AdminPage() {
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#e5e5e5] bg-white px-6">
         <h1 className="text-lg font-bold text-[#171717]">Reolconsult Admin</h1>
         <div className="flex items-center gap-3">
-          {saved && <span className="rounded-full bg-emerald-50 px-4 py-1.5 text-sm font-medium text-emerald-600">Lagret!</span>}
+          {(saved || settingsSaved) && <span className="rounded-full bg-emerald-50 px-4 py-1.5 text-sm font-medium text-emerald-600">Lagret!</span>}
+          <Link
+            href="/admin/bilder"
+            className="rounded-full border border-[#e5e5e5] px-4 py-2 text-sm font-medium text-[#404040] transition-colors hover:bg-[#f5f5f5] hover:text-[#171717]"
+          >
+            Rediger nettside
+          </Link>
           {activeItem === "ekstra-info" && openCategory && (
             <button onClick={saveCategory} disabled={saving} className="rounded-full bg-[#dc2626] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-50">
               {saving ? "Lagrer..." : "Lagre"}
+            </button>
+          )}
+          {activeItem === "innstillinger" && siteSettings && (
+            <button onClick={saveSiteSettings} disabled={settingsSaving} className="rounded-full bg-[#dc2626] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-50">
+              {settingsSaving ? "Lagrer..." : "Lagre"}
             </button>
           )}
           <button onClick={() => supabase.auth.signOut()} className="rounded-full border border-[#e5e5e5] px-4 py-2 text-sm text-[#737373] transition-colors hover:bg-[#f5f5f5]">
@@ -910,20 +1073,115 @@ CREATE POLICY "Allow auth delete docs" ON chatbot_documents FOR DELETE USING (au
               <div className="mx-auto max-w-2xl space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-[#171717]">Innstillinger</h2>
-                  <p className="mt-1 text-sm text-[#a3a3a3]">Administrer konto og innstillinger</p>
+                  <p className="mt-1 text-sm text-[#a3a3a3]">
+                    Endringer her vises umiddelbart på nettsiden.
+                  </p>
                 </div>
-                <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                  <h3 className="text-sm font-semibold text-[#171717]">Innlogget som</h3>
-                  <p className="mt-2 text-sm text-[#737373]">{user.email}</p>
-                </div>
-                <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                  <h3 className="text-sm font-semibold text-[#171717]">Bytt passord</h3>
-                  <p className="mt-2 text-sm text-[#a3a3a3]">Kontakt administrator for å endre passord.</p>
-                </div>
-                <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                  <h3 className="text-sm font-semibold text-[#171717]">Chatbot</h3>
-                  <p className="mt-2 text-sm text-[#a3a3a3]">Chatboten er aktiv og synlig for alle besøkende.</p>
-                </div>
+
+                {settingsLoading || !siteSettings ? (
+                  <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
+                    <p className="text-sm text-[#a3a3a3]">Laster innstillinger…</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Kontakt */}
+                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
+                      <h3 className="text-sm font-semibold text-[#171717]">Kontakt</h3>
+                      <div className="mt-4 space-y-4">
+                        <label className="block">
+                          <span className="text-xs font-medium text-[#737373]">Telefon</span>
+                          <input
+                            type="text"
+                            value={siteSettings.phone ?? ""}
+                            onChange={(e) => updateSettingField("phone", e.target.value)}
+                            placeholder="33 36 55 80"
+                            className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
+                          />
+                          <span className="mt-1 block text-[11px] text-[#a3a3a3]">
+                            Skriv uten landskode. tel:-lenker bygges automatisk med +47.
+                          </span>
+                        </label>
+                        <label className="block">
+                          <span className="text-xs font-medium text-[#737373]">E-post (generell)</span>
+                          <input
+                            type="email"
+                            value={siteSettings.email_general ?? ""}
+                            onChange={(e) => updateSettingField("email_general", e.target.value)}
+                            placeholder="mail@reolconsult.no"
+                            className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Adresse */}
+                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
+                      <h3 className="text-sm font-semibold text-[#171717]">Adresse</h3>
+                      <div className="mt-4 space-y-4">
+                        <label className="block">
+                          <span className="text-xs font-medium text-[#737373]">Besøksadresse</span>
+                          <input
+                            type="text"
+                            value={siteSettings.visit_address ?? ""}
+                            onChange={(e) => updateSettingField("visit_address", e.target.value)}
+                            placeholder="Smiløkka 7, 3173 Vear"
+                            className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
+                          />
+                        </label>
+                        <label className="block">
+                          <span className="text-xs font-medium text-[#737373]">Postadresse</span>
+                          <input
+                            type="text"
+                            value={siteSettings.postal_address ?? ""}
+                            onChange={(e) => updateSettingField("postal_address", e.target.value)}
+                            placeholder="Postboks 1, 3108 Vear"
+                            className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Åpningstider */}
+                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
+                      <h3 className="text-sm font-semibold text-[#171717]">Åpningstider</h3>
+                      <p className="mt-1 text-xs text-[#a3a3a3]">Én linje per rad. Vises ordrett på siden.</p>
+                      <textarea
+                        value={siteSettings.opening_hours ?? ""}
+                        onChange={(e) => updateSettingField("opening_hours", e.target.value)}
+                        placeholder={"Mandag–fredag: 08:00–16:00\nLørdag/søndag: Stengt"}
+                        rows={4}
+                        className="mt-3 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
+                      />
+                    </div>
+
+                    {/* Sosiale medier */}
+                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
+                      <h3 className="text-sm font-semibold text-[#171717]">Sosiale medier</h3>
+                      <p className="mt-1 text-xs text-[#a3a3a3]">La feltet stå tomt hvis dere ikke har konto.</p>
+                      <div className="mt-4 space-y-4">
+                        {(["facebook", "instagram", "linkedin"] as const).map((key) => (
+                          <label key={key} className="block">
+                            <span className="text-xs font-medium text-[#737373] capitalize">{key}</span>
+                            <input
+                              type="url"
+                              value={siteSettings.social?.[key] ?? ""}
+                              onChange={(e) => updateSocial(key, e.target.value)}
+                              placeholder={`https://${key}.com/…`}
+                              className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Konto */}
+                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
+                      <h3 className="text-sm font-semibold text-[#171717]">Konto</h3>
+                      <p className="mt-2 text-sm text-[#737373]">Innlogget som <span className="font-medium text-[#404040]">{user.email}</span></p>
+                      <p className="mt-1 text-xs text-[#a3a3a3]">Rolle: {siteRole}</p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
