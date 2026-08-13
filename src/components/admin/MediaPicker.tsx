@@ -28,14 +28,14 @@ export default function MediaPicker({
 
   return (
     <div>
-      <span className="text-xs font-medium text-[#737373]">{label}</span>
-      <div className="mt-1 flex items-start gap-3">
+      <span className="text-[12px] font-medium text-[#404040]">{label}</span>
+      <div className="mt-1.5 flex items-start gap-3">
         {value ? (
-          <div className="relative h-24 w-32 overflow-hidden rounded-lg border border-[#e5e5e5] bg-[#fafafa]">
+          <div className="relative h-24 w-32 overflow-hidden rounded-lg border border-[#ececec] bg-[#fafaf9]">
             <Image src={value} alt="" fill sizes="128px" className="object-cover" unoptimized />
           </div>
         ) : (
-          <div className="flex h-24 w-32 items-center justify-center rounded-lg border border-dashed border-[#e5e5e5] bg-[#fafafa]">
+          <div className="flex h-24 w-32 items-center justify-center rounded-lg border border-dashed border-[#d4d4d4] bg-[#fafaf9]">
             <span className="text-[11px] text-[#a3a3a3]">Ingen bilde</span>
           </div>
         )}
@@ -43,15 +43,15 @@ export default function MediaPicker({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="rounded-lg border border-[#e5e5e5] bg-white px-4 py-1.5 text-xs font-medium text-[#404040] transition-colors hover:bg-[#f5f5f5]"
+            className="rounded-full border border-[#ececec] bg-white px-3.5 py-1.5 text-[12px] font-medium text-[#525252] transition duration-150 hover:border-[#d4d4d4] hover:text-[#171717]"
           >
-            {value ? "Bytt" : "Velg eller last opp"}
+            {value ? "Bytt bilde" : "Velg eller last opp"}
           </button>
           {value && (
             <button
               type="button"
               onClick={() => onChange(null)}
-              className="rounded-lg border border-transparent px-4 py-1.5 text-xs font-medium text-[#737373] hover:text-[#dc2626]"
+              className="rounded-full px-3.5 py-1.5 text-[12px] font-medium text-[#737373] transition-colors duration-150 hover:bg-[#fafaf9] hover:text-[#171717]"
             >
               Fjern
             </button>
@@ -74,7 +74,7 @@ export default function MediaPicker({
   );
 }
 
-function PickerModal({
+export function PickerModal({
   siteId,
   defaultCategory,
   onClose,
@@ -144,25 +144,25 @@ function PickerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="flex h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="flex h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-[0_20px_60px_-12px_rgba(0,0,0,0.25)] ring-1 ring-[#ececec]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-[#e5e5e5] px-6 py-4">
-          <h2 className="text-lg font-semibold text-[#171717]">Velg bilde</h2>
-          <button onClick={onClose} className="text-sm text-[#737373] hover:text-[#171717]">
+        <div className="flex shrink-0 items-center justify-between border-b border-[#ececec] px-6 py-4">
+          <h2 className="text-[15px] font-semibold tracking-tight text-[#171717]">Velg bilde</h2>
+          <button onClick={onClose} className="rounded-full px-3 py-1 text-[12.5px] font-medium text-[#737373] transition-colors duration-150 hover:bg-[#fafaf9] hover:text-[#171717]">
             Lukk
           </button>
         </div>
 
         {/* Filter */}
-        <div className="flex shrink-0 flex-wrap gap-1.5 border-b border-[#e5e5e5] px-6 py-3">
+        <div className="flex shrink-0 flex-wrap gap-1.5 border-b border-[#ececec] bg-[#fafaf9] px-6 py-3">
           <button
             onClick={() => setCategory("all")}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              category === "all" ? "bg-[#171717] text-white" : "bg-[#f5f5f5] text-[#404040] hover:bg-[#e5e5e5]"
+            className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition duration-150 ${
+              category === "all" ? "bg-[#171717] text-white shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "bg-white text-[#525252] ring-1 ring-[#ececec] hover:text-[#171717]"
             }`}
           >
             Alle
@@ -171,8 +171,8 @@ function PickerModal({
             <button
               key={c.key}
               onClick={() => setCategory(c.key)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                category === c.key ? "bg-[#171717] text-white" : "bg-[#f5f5f5] text-[#404040] hover:bg-[#e5e5e5]"
+              className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition duration-150 ${
+                category === c.key ? "bg-[#171717] text-white shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "bg-white text-[#525252] ring-1 ring-[#ececec] hover:text-[#171717]"
               }`}
             >
               {c.label}
@@ -188,9 +188,9 @@ function PickerModal({
           }}
           onDragLeave={() => setDragActive(false)}
           onDrop={handleDrop}
-          className={`shrink-0 px-6 py-4 ${dragActive ? "bg-[#dc2626]/5" : ""}`}
+          className={`shrink-0 px-6 py-4 transition-colors duration-150 ${dragActive ? "bg-[#171717]/[0.03]" : ""}`}
         >
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#e5e5e5] bg-[#fafafa] py-4 text-sm text-[#737373] hover:border-[#dc2626]/40 hover:text-[#dc2626]">
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#d4d4d4] bg-[#fafaf9] py-5 text-[12.5px] text-[#737373] transition duration-150 hover:border-[#171717]/40 hover:bg-white hover:text-[#171717]">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
@@ -206,14 +206,14 @@ function PickerModal({
               disabled={uploading}
             />
           </label>
-          {uploadError && <p className="mt-2 text-xs text-red-600">{uploadError}</p>}
+          {uploadError && <p className="mt-2 text-[11.5px] text-red-600">{uploadError}</p>}
         </div>
 
         {/* Bibliotek */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto bg-[#fafaf9] px-6 py-4">
           {loading ? (
             <div className="flex h-40 items-center justify-center">
-              <span className="text-sm text-[#a3a3a3]">Laster…</span>
+              <span className="text-[13px] text-[#a3a3a3]">Laster…</span>
             </div>
           ) : (
             <MediaGrid items={items} onSelect={onSelect} />

@@ -60,8 +60,8 @@ export default async function SkolePage() {
       "Holdbarhet er nøkkelordet. Vi har levert innredning til en rekke skoler og barnehager over hele landet, og mange kunder kommer tilbake år etter år. Produktene våre skal tåle hard slitasje og holde seg moderne i mange år.",
     heroImage: "https://reolconsult.no/wp-content/uploads/2023/11/Skole-og-barnehage-1.jpg",
     breadcrumbLabel: "Skole & Barnehage",
-    ctaTitle: "Skal skolen eller barnehagen innredes?",
-    ctaBody: "Vi leverer holdbare møbler som tåler hard daglig bruk. Ta kontakt for et uforpliktende tilbud.",
+    ctaTitle: "Trenger du innredning til skole eller barnehage?",
+    ctaBody: "Kontakt oss for gratis befaring og uforpliktende tilbud. Vi leverer holdbare møbler som tåler hard daglig bruk.",
     products: FALLBACK_PRODUCTS,
   });
   return <CategoryPageContent {...data} />;

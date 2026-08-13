@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import OpenStatusBadge from "@/components/OpenStatusBadge";
 import {
   getCurrentSite,
   getSiteSettingsOrFallback,
@@ -13,11 +14,13 @@ export default async function Footer() {
   const orgNumber = site?.org_number ?? "955 273 117";
 
   return (
-    <footer className="bg-bg-light">
+    <footer className="bg-bg-light dark:bg-[#0a0b0d]">
+      {/* Subtil rød accent-stripe på toppen */}
+      <div className="h-[1px] bg-gradient-to-r from-transparent via-accent/15 to-transparent" />
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         {/* Logo */}
         <div className="mb-12">
-          <Image src="/logo.png" alt={siteName} width={200} height={108} className="h-20 w-auto" />
+          <Image src="/logo.png" alt={siteName} width={200} height={108} className="h-20 w-auto dark:[filter:brightness(0)_invert(1)]" />
         </div>
 
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-12 lg:grid-cols-4">
@@ -26,7 +29,7 @@ export default async function Footer() {
             <h3 className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
               Kontakt
             </h3>
-            <ul className="space-y-3 text-sm text-text-dark/90">
+            <ul className="space-y-3 text-sm text-text-dark/80 dark:text-white/70">
               {settings.visit_address && <li>{settings.visit_address}</li>}
               {settings.phone && (
                 <li>
@@ -42,6 +45,9 @@ export default async function Footer() {
                   </a>
                 </li>
               )}
+              <li>
+                <OpenStatusBadge />
+              </li>
             </ul>
           </div>
 
@@ -50,7 +56,7 @@ export default async function Footer() {
             <h3 className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
               Produkter
             </h3>
-            <ul className="space-y-3 text-sm text-text-dark/90">
+            <ul className="space-y-3 text-sm text-text-dark/80 dark:text-white/70">
               <li>
                 <Link href="/produkter/lager" className="transition-colors duration-200 hover:text-accent">
                   Lagerinnredning
@@ -89,7 +95,7 @@ export default async function Footer() {
             <h3 className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
               Selskapet
             </h3>
-            <ul className="space-y-3 text-sm text-text-dark/90">
+            <ul className="space-y-3 text-sm text-text-dark/80 dark:text-white/70">
               <li>
                 <Link href="/om-oss" className="transition-colors duration-200 hover:text-accent">
                   Om oss
@@ -113,7 +119,7 @@ export default async function Footer() {
             <h3 className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
               Info
             </h3>
-            <ul className="space-y-3 text-sm text-text-dark/90">
+            <ul className="space-y-3 text-sm text-text-dark/80 dark:text-white/70">
               <li>
                 <Link href="/kontakt" className="transition-colors duration-200 hover:text-accent">
                   Kontakt oss
@@ -129,7 +135,7 @@ export default async function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 pt-8 text-center text-xs text-text-dark/40">
+        <div className="mt-14 pt-8 text-center text-xs text-text-dark/40 dark:text-white/35">
           &copy; {new Date().getFullYear()} {siteName}
         </div>
       </div>

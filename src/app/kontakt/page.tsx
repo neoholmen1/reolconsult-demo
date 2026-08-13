@@ -1,6 +1,21 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getCurrentSite, getSiteSettingsOrFallback } from "@/lib/site";
 import { getPageSections, getSectionField, getTeamMembers } from "@/lib/cms";
 import KontaktContent, { type KontaktAnsatt } from "./kontakt-content";
+
+export const metadata: Metadata = {
+  title: "Kontakt – Reol-Consult AS",
+  description:
+    "Ta kontakt med Reol-Consult AS for tilbud, rådgivning eller besøk i showroom på Vear. Telefon 33 36 55 80.",
+  openGraph: {
+    title: "Kontakt – Reol-Consult AS",
+    description:
+      "Ta kontakt med Reol-Consult AS for tilbud, rådgivning eller besøk i showroom på Vear.",
+    type: "website",
+    url: "https://reolconsult.no/kontakt",
+  },
+};
 
 const FALLBACK_ANSATTE: KontaktAnsatt[] = [
   { name: "Agnete H. Bechmann", role: "Salg & rådgivning", phone: "450 07 322", email: "agh@reolconsult.no" },
@@ -48,13 +63,15 @@ export default async function KontaktPage() {
   );
 
   return (
-    <KontaktContent
-      ansatte={ansatte}
-      introEyebrow={introEyebrow}
-      introTitle={introTitle}
-      introBody={introBody}
-      formTitle={formTitle}
-      formHelp={formHelp}
-    />
+    <Suspense fallback={null}>
+      <KontaktContent
+        ansatte={ansatte}
+        introEyebrow={introEyebrow}
+        introTitle={introTitle}
+        introBody={introBody}
+        formTitle={formTitle}
+        formHelp={formHelp}
+      />
+    </Suspense>
   );
 }

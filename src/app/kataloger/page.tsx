@@ -73,8 +73,11 @@ export default async function Kataloger() {
       <section className="pb-16 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimateOnScroll className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">{eyebrow}</p>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight text-primary sm:text-4xl md:text-5xl">
+            <p className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
+              <span className="h-px w-7 bg-accent/50" />
+              {eyebrow}
+            </p>
+            <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-[-0.02em] text-primary sm:text-5xl md:text-6xl">
               {introTitle}
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-text-muted whitespace-pre-line">
@@ -94,12 +97,12 @@ export default async function Kataloger() {
                   href={katalog.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex h-full flex-col rounded-2xl border border-border bg-white p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
+                  className="group flex h-full flex-col rounded-3xl border border-border bg-surface p-8 shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]"
                 >
-                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent/5">
+                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/5">
                     <PdfIcon />
                   </div>
-                  <h3 className="text-lg font-semibold text-primary">{katalog.title}</h3>
+                  <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-primary">{katalog.title}</h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-text-muted">
                     {katalog.description}
                   </p>
@@ -117,21 +120,21 @@ export default async function Kataloger() {
       </section>
 
       {/* Brosjyre CTA */}
-      <section className="bg-white py-24 sm:py-32">
+      <section className="bg-surface-warm py-24 sm:py-32">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <AnimateOnScroll>
-            <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">{ctaTitle}</h2>
+            <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-primary sm:text-4xl">{ctaTitle}</h2>
             <p className="mt-4 text-lg text-text-muted whitespace-pre-line">{ctaBody}</p>
             <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
               <a
                 href={formatPhoneLink(settings.phone)}
-                className="w-full sm:w-auto rounded-full bg-accent px-8 py-4 text-center text-base font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
+                className="w-full sm:w-auto rounded-full bg-accent px-8 py-4 text-center text-base font-semibold text-white transition hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(220,38,38,0.25)] active:translate-y-[1px]"
               >
                 Ring {settings.phone ?? "33 36 55 80"}
               </a>
               <a
                 href={`mailto:${settings.email_general ?? "mail@reolconsult.no"}?subject=${encodeURIComponent("Jeg ønsker tilsendt en produktbrosjyre")}`}
-                className="w-full sm:w-auto rounded-full border border-primary/20 px-8 py-4 text-center text-base font-semibold text-primary transition-all duration-300 hover:bg-primary hover:text-white active:translate-y-[1px]"
+                className="w-full sm:w-auto rounded-full border border-primary/20 px-8 py-4 text-center text-base font-semibold text-primary transition duration-300 hover:bg-primary hover:text-white active:translate-y-[1px]"
               >
                 Send e-post
               </a>

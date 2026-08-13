@@ -63,12 +63,12 @@ export default async function Referanser() {
   );
   const casesTitle = getSectionField(sections, "cases", "title", "Utvalgte prosjekter");
   const logosTitle = getSectionField(sections, "logos", "title", "Et utvalg av kunder vi har levert til");
-  const ctaTitle = getSectionField(sections, "cta_final", "title", "Vurderer du oss til ditt prosjekt?");
+  const ctaTitle = getSectionField(sections, "cta_final", "title", "Vil du bli vår neste fornøyde kunde?");
   const ctaBody = getSectionField(
     sections,
     "cta_final",
     "body",
-    "Uansett om du trenger innredning til butikk, lager, kontor eller verksted — vi finner løsningen for deg.",
+    "Kontakt oss for gratis befaring og uforpliktende tilbud. Vi finner løsningen — om du trenger innredning til butikk, lager, kontor eller verksted.",
   );
 
   return (
@@ -76,10 +76,11 @@ export default async function Referanser() {
       <section className="bg-bg-light pt-8 pb-16 sm:pt-20 sm:pb-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
-            <span className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+            <p className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
+              <span className="h-px w-7 bg-accent/50" />
               {eyebrow}
-            </span>
-            <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-primary sm:text-4xl md:text-5xl">
+            </p>
+            <h1 className="mt-5 font-display text-[2.25rem] font-semibold leading-tight tracking-[-0.02em] text-primary md:text-5xl">
               {title}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-text-muted whitespace-pre-line">
@@ -89,16 +90,16 @@ export default async function Referanser() {
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-24">
+      <section className="bg-surface py-16 sm:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
-            <h2 className="text-2xl font-bold tracking-tight text-primary md:text-3xl">{casesTitle}</h2>
+            <h2 className="font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-primary md:text-4xl">{casesTitle}</h2>
           </AnimateOnScroll>
 
           <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {cases.map((c, i) => (
               <AnimateOnScroll key={c.id} delay={i * 0.06}>
-                <div className="group overflow-hidden rounded-2xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
+                <div className="group overflow-hidden rounded-3xl border border-border bg-surface-warm shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
                   {c.image_url && (
                     <div className="relative aspect-[4/3] overflow-hidden bg-bg-light">
                       <Image
@@ -130,18 +131,18 @@ export default async function Referanser() {
       <section className="bg-bg-light py-16 sm:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
-            <h2 className="text-2xl font-bold tracking-tight text-primary md:text-3xl">{logosTitle}</h2>
+            <h2 className="font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-primary md:text-4xl">{logosTitle}</h2>
           </AnimateOnScroll>
-          <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-6">
             {logos.map((ref, i) => (
               <AnimateOnScroll key={ref.id} delay={i * 0.06}>
-                <div className="flex aspect-[3/2] items-center justify-center rounded-2xl border border-border bg-white p-4 sm:p-8 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
+                <div className="group flex aspect-[3/2] items-center justify-center rounded-3xl border border-border bg-surface p-5 sm:p-7 shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
                   <Image
                     src={ref.logo_url}
                     alt={ref.name}
                     width={200}
                     height={64}
-                    className="max-h-16 max-w-full object-contain opacity-70 transition-opacity duration-300 hover:opacity-100"
+                    className="max-h-12 max-w-full object-contain opacity-60 grayscale transition duration-300 sm:max-h-16 group-hover:opacity-100 group-hover:grayscale-0"
                     unoptimized
                   />
                 </div>
@@ -151,21 +152,21 @@ export default async function Referanser() {
         </div>
       </section>
 
-      <section className="bg-bg-light py-16 sm:py-24">
+      <section className="bg-primary py-20 sm:py-28">
         <div className="mx-auto max-w-3xl px-6 text-center">
           <AnimateOnScroll>
-            <h2 className="text-3xl font-bold tracking-tight text-primary md:text-4xl">{ctaTitle}</h2>
-            <p className="mx-auto mt-4 max-w-lg text-lg text-text-muted whitespace-pre-line">{ctaBody}</p>
+            <h2 className="font-display text-[2.25rem] font-semibold tracking-[-0.02em] text-white md:text-5xl">{ctaTitle}</h2>
+            <p className="mx-auto mt-5 max-w-lg text-lg leading-relaxed text-white/70 whitespace-pre-line">{ctaBody}</p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <a
                 href="/kontakt"
-                className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
+                className="inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 font-semibold text-white transition hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(220,38,38,0.25)] active:translate-y-[1px]"
               >
                 Få et uforpliktende tilbud
               </a>
               <a
                 href={formatPhoneLink(settings.phone)}
-                className="inline-flex items-center gap-2 rounded-full border-2 border-primary/20 px-7 py-3.5 font-semibold text-primary transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 active:translate-y-[1px]"
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-8 py-4 font-semibold text-white transition duration-300 hover:border-white/40 hover:bg-white/10 active:translate-y-[1px]"
               >
                 Ring {settings.phone ?? "33 36 55 80"}
               </a>

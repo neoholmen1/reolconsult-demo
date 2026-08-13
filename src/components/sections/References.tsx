@@ -32,12 +32,17 @@ export default async function References() {
   const repeated = [...items, ...items, ...items, ...items];
 
   return (
-    <section className="bg-bg-light pt-6 pb-10 sm:pt-8 sm:pb-12">
-      <AnimateOnScroll className="text-center mb-12" variant="fadeIn">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-          {eyebrow}
-        </p>
-      </AnimateOnScroll>
+    <section className="bg-surface dark:bg-[#0b0c0f]/55 dark:backdrop-blur-md py-20 md:py-28">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <AnimateOnScroll className="mb-12 text-center md:mb-16" variant="fadeIn">
+          <p className="text-[13px] font-medium tracking-tight text-text-dark/80 dark:text-white/80">
+            {eyebrow}
+          </p>
+          <p className="mt-1.5 text-xs text-text-muted dark:text-white/65">
+            Vi leverer til bedrifter i hele Norge
+          </p>
+        </AnimateOnScroll>
+      </div>
 
       <div
         className="overflow-hidden"
@@ -50,7 +55,7 @@ export default async function References() {
           {repeated.map((item, i) => (
             <div
               key={`${item.key}-${i}`}
-              className="mx-3 flex h-14 shrink-0 items-center justify-center rounded-xl border border-border bg-white px-10"
+              className="group mx-2 flex h-16 w-[180px] shrink-0 items-center justify-center px-6"
             >
               {item.logo ? (
                 <Image
@@ -58,11 +63,11 @@ export default async function References() {
                   alt={item.name}
                   width={120}
                   height={40}
-                  className="max-h-10 max-w-full object-contain opacity-70"
+                  className="max-h-8 max-w-full object-contain opacity-50 grayscale transition duration-300 group-hover:opacity-100 group-hover:grayscale-0"
                   unoptimized
                 />
               ) : (
-                <span className="text-sm font-semibold tracking-wide text-text-muted/60 whitespace-nowrap">
+                <span className="text-[13px] font-semibold tracking-wide text-text-muted dark:text-white/65 whitespace-nowrap transition-colors duration-300 group-hover:text-primary dark:group-hover:text-white">
                   {item.name}
                 </span>
               )}
@@ -71,18 +76,16 @@ export default async function References() {
         </div>
       </div>
 
-      <AnimateOnScroll delay={0.2}>
-        <div className="mt-10 text-center">
-          <a
-            href="/referanser"
-            className="group inline-flex items-center gap-2 text-sm font-medium text-primary transition-all duration-200 hover:gap-3"
-          >
-            Se alle referanser
-            <svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-            </svg>
-          </a>
-        </div>
+      <AnimateOnScroll className="mt-12 text-center md:mt-16" delay={0.2}>
+        <a
+          href="/referanser"
+          className="group inline-flex items-center gap-2 text-sm font-medium text-primary dark:text-white transition duration-200 hover:gap-3"
+        >
+          Se alle referanser
+          <svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </a>
       </AnimateOnScroll>
     </section>
   );

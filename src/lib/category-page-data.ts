@@ -59,6 +59,7 @@ export async function getCategoryPageData(
   return {
     hero: { title: heroTitle, subtitle: heroSubtitle, image: heroImage },
     breadcrumbLabel: fallback.breadcrumbLabel,
+    categorySlug: slug,
     products,
     cta: { title: ctaTitle, body: ctaBody },
   };

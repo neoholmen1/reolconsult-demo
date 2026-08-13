@@ -1,6 +1,8 @@
 import Hero from "@/components/sections/Hero";
 import ProductCategories from "@/components/sections/ProductCategories";
+import ProcessSection from "@/components/sections/ProcessSection";
 import References from "@/components/sections/References";
+import ReolkontrollSection from "@/components/sections/ReolkontrollSection";
 import Testimonials from "@/components/sections/Testimonials";
 import AboutTeaser from "@/components/sections/AboutTeaser";
 import UsedSalesTeaser from "@/components/sections/UsedSalesTeaser";
@@ -26,7 +28,9 @@ export default async function Forside() {
     <>
       <Hero heroData={heroData} />
       <ProductCategories />
+      <ProcessSection />
       <References />
+      <ReolkontrollSection />
       <Testimonials />
       <AboutTeaser />
       <UsedSalesTeaser />

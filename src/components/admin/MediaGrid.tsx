@@ -28,7 +28,7 @@ export default function MediaGrid({
           <button
             key={item.id}
             onClick={() => onSelect(item)}
-            className={`group relative aspect-square overflow-hidden rounded-xl border transition-all ${
+            className={`group relative aspect-square overflow-hidden rounded-xl border transition ${
               selected
                 ? "border-[#dc2626] ring-2 ring-[#dc2626]/30"
                 : "border-[#e5e5e5] hover:border-[#a3a3a3]"

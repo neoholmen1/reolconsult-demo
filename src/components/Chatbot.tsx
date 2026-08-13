@@ -742,11 +742,11 @@ const UI: Record<Lang, {
   stockFallback: string;
 }> = {
   nb: {
-    headerTitle: "Spør oss",
+    headerTitle: "AI-assistent",
     headerSubConnected: "Tilkoblet produktdatabase",
     headerSubDefault: "Vi svarer på det meste",
     inputPlaceholder: "Skriv en melding...",
-    initialMessage: "Hei! Jeg er Reol-Consults digitale assistent. Spør meg om produkter, priser, lagerstatus eller noe annet!",
+    initialMessage: "Hei! Jeg er Reol-Consults AI-assistent. Spør meg om produkter, priser, lagerstatus eller noe annet!",
     fallbackResponse: "Beklager, det har jeg ikke nok info om ennå. Men teamet vårt hjelper deg gjerne! Ring {phone} eller send e-post til {email}.",
     fallbackFollowUps: [
       { label: "Hva kan du hjelpe med?", message: "Hva kan du hjelpe meg med?" },
@@ -760,18 +760,18 @@ const UI: Record<Lang, {
       { label: "Besøk utstilling", message: "Kan jeg besøke utstillingen?" },
     ],
     ctaFooter: "\n\nKontakt oss på {phone} for eksakt tilbud!",
-    openChat: "Åpne chat",
-    closeChat: "Lukk chat",
+    openChat: "Åpne AI-assistent",
+    closeChat: "Lukk AI-assistent",
     sendMessage: "Send melding",
     stockOverviewIntro: "Her er lagerstatus for produktene våre:\n\n",
     stockFallback: "Ring oss på {phone} for oppdatert lagerstatus!",
   },
   en: {
-    headerTitle: "Ask us",
+    headerTitle: "AI Assistant",
     headerSubConnected: "Connected to product database",
     headerSubDefault: "We answer most questions",
     inputPlaceholder: "Type a message...",
-    initialMessage: "Hi! I'm Reol-Consult's digital assistant. Ask me about products, prices, stock status, or anything else!",
+    initialMessage: "Hi! I'm Reol-Consult's AI assistant. Ask me about products, prices, stock status, or anything else!",
     fallbackResponse: "Sorry, I don't have enough info about that yet. But our team is happy to help! Call {phone_intl} or email {email}.",
     fallbackFollowUps: [
       { label: "What can you help with?", message: "What can you help me with?" },
@@ -785,8 +785,8 @@ const UI: Record<Lang, {
       { label: "Visit showroom", message: "Can I visit the showroom?" },
     ],
     ctaFooter: "\n\nContact us at {phone_intl} for an exact quote!",
-    openChat: "Open chat",
-    closeChat: "Close chat",
+    openChat: "Open AI assistant",
+    closeChat: "Close AI assistant",
     sendMessage: "Send message",
     stockOverviewIntro: "Here's the current stock status:\n\n",
     stockFallback: "Call us at {phone_intl} for updated stock status!",
@@ -1332,6 +1332,7 @@ export default function Chatbot() {
   const [quickOptions, setQuickOptions] = useState<QuickOption[]>([]);
   const [dbSections, setDbSections] = useState<KnowledgeSection[]>([]);
   const [dbLoaded, setDbLoaded] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const idCounter = useRef(1);
@@ -1447,69 +1448,72 @@ export default function Chatbot() {
   const ui = UI[lang];
 
   const handleSend = useCallback(
-    (text?: string) => {
+    async (text?: string) => {
       const msg = (text ?? input).trim();
       if (!msg) return;
 
       const userId = idCounter.current++;
       const userMsg: Message = { id: userId, text: msg, sender: "user" };
+      const updatedMessages = [...messages, userMsg];
 
-      setMessages((prev) => [...prev, userMsg]);
+      setMessages(updatedMessages);
       setInput("");
       setQuickOptions([]);
+      setIsTyping(true);
 
-      setTimeout(() => {
-        let responseText: string;
-        let followUps: QuickOption[];
+      // Bygg historie i Anthropic-format. Hopp over første velkomstmelding (id=0)
+      // siden den ikke har faktisk dialog-kontekst.
+      const history = updatedMessages
+        .filter((m) => m.id !== 0)
+        .map((m) => ({
+          role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
+          content: m.text,
+        }));
 
-        const quantity = extractQuantity(msg);
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: history, lang }),
+        });
+
+        const data = await res.json();
         const currentUi = UI[lang];
-
-        if (dbLoaded && isStockQuery(msg)) {
-          responseText = getStockOverview(dbSections, lang);
-          followUps = lang === "nb"
-            ? [{ label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" }, { label: "Produkter", message: "Hva slags produkter har dere?" }]
-            : [{ label: "Contact us", message: "How can I contact you?" }, { label: "Products", message: "What products do you offer?" }];
-        } else if (dbLoaded) {
-          const dbMatch = searchSections(dbSections, msg, lang);
-          if (dbMatch) {
-            responseText = formatDbResponse(dbMatch, quantity, lang);
-            followUps = lang === "nb"
-              ? [{ label: "Kontakt oss", message: "Hvordan kontakter jeg dere?" }, { label: "Lagerstatus", message: "Hva har dere på lager?" }]
-              : [{ label: "Contact us", message: "How can I contact you?" }, { label: "Stock status", message: "What do you have in stock?" }];
-          } else {
-            const hardcoded = findHardcodedResponse(msg, lang);
-            if (hardcoded) {
-              responseText = hardcoded.text;
-              followUps = hardcoded.followUps;
-            } else {
-              responseText = currentUi.fallbackResponse;
-              followUps = currentUi.fallbackFollowUps;
-            }
-          }
-        } else {
-          const hardcoded = findHardcodedResponse(msg, lang);
-          if (hardcoded) {
-            responseText = hardcoded.text;
-            followUps = hardcoded.followUps;
-          } else {
-            responseText = currentUi.fallbackResponse;
-            followUps = currentUi.fallbackFollowUps;
-          }
-        }
+        const botText: string =
+          data?.text ||
+          data?.error ||
+          currentUi.fallbackResponse;
 
         const botId = idCounter.current++;
-        const botMsg: Message = {
-          id: botId,
-          text: responseText,
-          sender: "bot",
-        };
-        setMessages((prev) => [...prev, botMsg]);
-        setQuickOptions(followUps);
-      }, 400);
+        setMessages((prev) => [...prev, { id: botId, text: botText, sender: "bot" }]);
+        setQuickOptions(currentUi.fallbackFollowUps);
+      } catch (err) {
+        console.error("chat:", err);
+        const currentUi = UI[lang];
+        const botId = idCounter.current++;
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: botId,
+            text:
+              lang === "nb"
+                ? "Beklager, jeg klarte ikke å svare nå. Ring oss på 33 36 55 80."
+                : "Sorry, I couldn't respond right now. Please call us at 33 36 55 80.",
+            sender: "bot",
+          },
+        ]);
+        setQuickOptions(currentUi.fallbackFollowUps);
+      } finally {
+        setIsTyping(false);
+      }
     },
-    [input, dbLoaded, dbSections, lang],
+    [input, messages, lang],
   );
+
+  // Hold dbSections referert så TypeScript ikke klager — beholder dem av
+  // bakoverkompatibilitet (admin-fanen leser fortsatt fra samme kilde).
+  void dbSections;
+  void dbLoaded;
 
   return (
     <>
@@ -1522,7 +1526,7 @@ export default function Chatbot() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.25, 0.4, 0.25, 1] }}
             onClick={() => setOpen(true)}
-            className="fixed right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_30px_rgba(220,38,38,0.3)] transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(220,38,38,0.45)] sm:right-6 sm:bottom-6"
+            className="fixed right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_30px_rgba(220,38,38,0.3)] transition duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(220,38,38,0.45)] sm:right-6 sm:bottom-6"
             style={{ bottom: "max(20px, env(safe-area-inset-bottom, 20px))" }}
             aria-label={ui.openChat}
           >
@@ -1551,7 +1555,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.25, ease: [0.25, 0.4, 0.25, 1] }}
-            className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-white shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:inset-auto sm:right-6 sm:bottom-6 sm:h-[500px] sm:w-[380px] sm:max-h-[calc(100vh-6rem)] sm:rounded-2xl"
+            className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-surface-warm shadow-[var(--shadow-float)] sm:inset-auto sm:right-6 sm:bottom-6 sm:h-[500px] sm:w-[380px] sm:max-h-[calc(100vh-6rem)] sm:rounded-3xl"
           >
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between bg-primary px-5 py-4">
@@ -1612,7 +1616,7 @@ export default function Chatbot() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto bg-bg-light px-4 py-4">
+            <div className="flex-1 overflow-y-auto bg-bg-light px-4 py-5">
               <div className="space-y-3">
                 {messages.map((msg) => (
                   <div
@@ -1623,7 +1627,7 @@ export default function Chatbot() {
                       className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
                         msg.sender === "user"
                           ? "rounded-br-md bg-primary text-white"
-                          : "rounded-bl-md border border-border bg-white text-text-dark"
+                          : "rounded-bl-md border border-border bg-surface text-text-dark shadow-[var(--shadow-soft)]"
                       }`}
                     >
                       {fillPlaceholders(msg.text, settings)
@@ -1638,6 +1642,20 @@ export default function Chatbot() {
                     </div>
                   </div>
                 ))}
+
+                {/* Typing-indikator mens vi venter på svar fra LLM */}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="rounded-2xl rounded-bl-md bg-[#f3f4f6] px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#9ca3af]" style={{ animationDelay: "0ms" }} />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#9ca3af]" style={{ animationDelay: "150ms" }} />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#9ca3af]" style={{ animationDelay: "300ms" }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div ref={messagesEndRef} />
               </div>
 
@@ -1648,7 +1666,7 @@ export default function Chatbot() {
                     <button
                       key={opt.label}
                       onClick={() => handleSend(opt.message)}
-                      className="rounded-full border border-primary/15 bg-white px-4 py-2 text-sm font-medium text-primary transition-all duration-200 hover:bg-primary/5"
+                      className="rounded-full border border-primary/15 bg-surface px-4 py-2 text-sm font-medium text-primary shadow-[var(--shadow-soft)] transition duration-200 hover:bg-primary/5"
                     >
                       {opt.label}
                     </button>
@@ -1658,7 +1676,7 @@ export default function Chatbot() {
             </div>
 
             {/* Input */}
-            <div className="shrink-0 border-t border-border bg-white px-4 py-3" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}>
+            <div className="shrink-0 border-t border-border bg-surface-warm px-4 py-3" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -1672,12 +1690,12 @@ export default function Chatbot() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={ui.inputPlaceholder}
-                  className="flex-1 rounded-xl border border-border bg-bg-light px-4 py-3 text-sm text-text-dark placeholder:text-text-light focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                  className="flex-1 rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-text-dark placeholder:text-text-light outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-white transition-all duration-200 hover:bg-accent-hover disabled:opacity-40 disabled:hover:bg-accent"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-white transition duration-200 hover:bg-accent-hover disabled:opacity-40 disabled:hover:bg-accent"
                   aria-label={ui.sendMessage}
                 >
                   <svg

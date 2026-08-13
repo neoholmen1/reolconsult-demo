@@ -85,7 +85,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             })}
             {post.author_name && ` · ${post.author_name}`}
           </p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-primary sm:text-4xl md:text-5xl">
+          <h1 className="mt-3 font-display text-4xl font-semibold leading-[1.08] tracking-[-0.02em] text-primary sm:text-5xl md:text-6xl">
             {post.title}
           </h1>
           {post.excerpt && (

@@ -58,7 +58,7 @@ export default function ProductCard({
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg">
+      <div className="overflow-hidden rounded-3xl border border-border bg-surface-warm shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
         {/* Clickable card header */}
         <button
           onClick={() => setExpanded(!expanded)}
@@ -89,7 +89,7 @@ export default function ProductCard({
           {/* Text */}
           <div className="flex min-w-0 flex-1 items-center justify-between gap-3 p-5 sm:p-6">
             <div className="min-w-0">
-              <h3 className="text-lg font-semibold text-primary sm:text-xl">
+              <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-primary sm:text-xl">
                 {title}
               </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-text-muted line-clamp-2">
@@ -134,14 +134,14 @@ export default function ProductCard({
                     <button
                       key={img.src}
                       onClick={() => setLightboxIndex(i)}
-                      className="group relative aspect-[4/3] h-[140px] shrink-0 overflow-hidden rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-[180px]"
+                      className="group relative aspect-[4/3] h-[140px] shrink-0 overflow-hidden rounded-2xl ring-1 ring-black/5 shadow-[var(--shadow-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-[180px]"
                     >
                       <img
                         src={img.src}
                         alt={img.alt}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 rounded-xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
+                      <div className="absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
                     </button>
                   ))}
                 </div>
@@ -164,7 +164,7 @@ export default function ProductCard({
               <div className="mt-6">
                 <Link
                   href="/kontakt"
-                  className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-accent-hover hover:shadow-[0_4px_15px_rgba(212,32,39,0.25)]"
+                  className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(220,38,38,0.25)] active:translate-y-[1px]"
                 >
                   Kontakt oss om dette
                   <svg

@@ -56,8 +56,8 @@ export default async function ButikkPage() {
       "Fra enkelte detaljer til komplette systemer for store butikkmiljøer. Grunnsystemet er utviklet etter svensk byggestandard og tåler hard daglig bruk i mange år.",
     heroImage: "https://reolconsult.no/wp-content/uploads/2022/11/Dagligvare-Foodora.jpg",
     breadcrumbLabel: "Butikk",
-    ctaTitle: "Skal du innrede ny butikk eller pusse opp?",
-    ctaBody: "Vi tegner og leverer komplett innredning — fra disker og hyller til belysning og prislister. Ta kontakt for et uforpliktende tilbud.",
+    ctaTitle: "Trenger du ny butikkinnredning?",
+    ctaBody: "Kontakt oss for gratis befaring og uforpliktende tilbud. Vi tegner og leverer komplett innredning — fra disker og hyller til belysning og prislister.",
     products: FALLBACK_PRODUCTS,
   });
   return <CategoryPageContent {...data} />;

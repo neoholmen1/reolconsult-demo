@@ -111,7 +111,7 @@ export default function CmsLayout({ children }: { children: React.ReactNode }) {
 
   // OK
   return (
-    <div className="fixed inset-0 z-[100] flex bg-[#fafafa]">
+    <div className="fixed inset-0 z-[100] flex bg-[#fafaf9]">
       <AdminSidebar userEmail={user.email ?? null} />
       <main className="flex flex-1 flex-col overflow-hidden">
         {children}

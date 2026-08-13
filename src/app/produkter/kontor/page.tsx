@@ -75,8 +75,8 @@ export default async function KontorPage() {
       "Kontormøbler, oppbevaring, resepsjon, konferansemøbler og skjermvegger. Vi hjelper deg med planlegging av hele kontoret.",
     heroImage: "https://reolconsult.no/wp-content/uploads/2018/08/projectskrivebordv.jpg",
     breadcrumbLabel: "Kontor",
-    ctaTitle: "Flytter dere til nye lokaler?",
-    ctaBody: "Vi planlegger hele kontoret — fra skrivebord og stoler til skjermvegger og resepsjonsdisk. Ta kontakt for et uforpliktende tilbud.",
+    ctaTitle: "Trenger du nytt kontor?",
+    ctaBody: "Kontakt oss for gratis befaring og uforpliktende tilbud. Vi planlegger hele kontoret — fra skrivebord og stoler til skjermvegger og resepsjonsdisk.",
     products: FALLBACK_PRODUCTS,
   });
   return <CategoryPageContent {...data} />;

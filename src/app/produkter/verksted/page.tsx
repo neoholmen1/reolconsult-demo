@@ -72,8 +72,8 @@ export default async function VerkstedPage() {
       "Ingen arbeidsplass er lik. Vi har et bredt utvalg standardløsninger og lager spesialtilpasninger når det trengs.",
     heroImage: "https://reolconsult.no/wp-content/uploads/2018/08/arbeidsbord500.jpg",
     breadcrumbLabel: "Verksted",
-    ctaTitle: "Trenger dere arbeidsplasser tilpasset bedriften?",
-    ctaBody: "Vi tilpasser arbeidsbord, verktøyskap og oppbevaring etter dine behov. Ta kontakt for et uforpliktende tilbud.",
+    ctaTitle: "Trenger du verkstedinnredning?",
+    ctaBody: "Kontakt oss for gratis befaring og uforpliktende tilbud. Vi tilpasser arbeidsbord, verktøyskap og oppbevaring etter dine behov.",
     products: FALLBACK_PRODUCTS,
   });
   return <CategoryPageContent {...data} />;

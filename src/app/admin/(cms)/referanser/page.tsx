@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Award, Building2, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCurrentSite, type Site } from "@/lib/site";
 import MediaPicker from "@/components/admin/MediaPicker";
 import { revalidatePublicSite } from "@/app/actions/revalidate";
+import PageHeader from "@/components/admin/PageHeader";
+import EmptyState from "@/components/admin/EmptyState";
 
 type CaseStudy = {
   id: string;
@@ -144,28 +147,51 @@ export default function ReferanserPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-[#e5e5e5] bg-white px-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-base font-semibold text-[#171717]">Referanser</h1>
-          <div className="flex gap-1 rounded-full bg-[#f5f5f5] p-1">
-            <button onClick={() => setTab("cases")} className={`rounded-full px-3 py-1 text-xs font-medium ${tab === "cases" ? "bg-white text-[#171717] shadow-sm" : "text-[#737373]"}`}>Prosjekter ({cases.length})</button>
-            <button onClick={() => setTab("logos")} className={`rounded-full px-3 py-1 text-xs font-medium ${tab === "logos" ? "bg-white text-[#171717] shadow-sm" : "text-[#737373]"}`}>Logoer ({logos.length})</button>
-          </div>
-        </div>
-        <button onClick={tab === "cases" ? addCase : addLogo} className="rounded-full bg-[#dc2626] px-5 py-2 text-sm font-semibold text-white hover:bg-[#b91c1c]">
-          {tab === "cases" ? "Nytt prosjekt" : "Ny logo"}
-        </button>
-      </div>
+      <PageHeader
+        title="Referanser"
+        subtitle="Prosjektcases vises på referansesiden, logoer på forsiden og referansesiden"
+        right={
+          <>
+            <div className="flex gap-1 rounded-full bg-[#f5f5f5] p-1">
+              <button
+                onClick={() => setTab("cases")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${tab === "cases" ? "bg-white text-[#171717] shadow-sm" : "text-[#737373]"}`}
+              >
+                <Award className="h-3.5 w-3.5" strokeWidth={1.75} />
+                Prosjekter <span className="text-[10px] opacity-70">({cases.length})</span>
+              </button>
+              <button
+                onClick={() => setTab("logos")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${tab === "logos" ? "bg-white text-[#171717] shadow-sm" : "text-[#737373]"}`}
+              >
+                <Building2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                Logoer <span className="text-[10px] opacity-70">({logos.length})</span>
+              </button>
+            </div>
+            <button
+              onClick={tab === "cases" ? addCase : addLogo}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#dc2626] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#b91c1c]"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.25} />
+              {tab === "cases" ? "Nytt prosjekt" : "Ny logo"}
+            </button>
+          </>
+        }
+      />
 
-      <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+      <div className="flex-1 overflow-y-auto bg-[#fafafa] p-8 lg:p-10">
         <div className="mx-auto max-w-3xl space-y-3">
           {loading ? (
             <div className="flex h-40 items-center justify-center"><span className="text-sm text-[#a3a3a3]">Laster…</span></div>
           ) : tab === "cases" ? (
             cases.length === 0 ? (
-              <div className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-[#e5e5e5] bg-white">
-                <p className="text-sm text-[#a3a3a3]">Ingen prosjekter.</p>
-              </div>
+              <EmptyState
+                icon={Award}
+                title="Ingen prosjekter ennå"
+                description="Vis fram prosjekter dere har levert til kunder. Hvert prosjekt har bilde, kundenavn og prosjekttype."
+                actionLabel="Legg til første prosjekt"
+                onAction={addCase}
+              />
             ) : (
               cases.map((c) => (
                 <div key={c.id} className="flex items-center gap-4 rounded-xl border border-[#e5e5e5] bg-white p-4">
@@ -183,9 +209,13 @@ export default function ReferanserPage() {
             )
           ) : (
             logos.length === 0 ? (
-              <div className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-[#e5e5e5] bg-white">
-                <p className="text-sm text-[#a3a3a3]">Ingen logoer.</p>
-              </div>
+              <EmptyState
+                icon={Building2}
+                title="Ingen logoer ennå"
+                description="Last opp kunde-logoer som vises i en stripe på forsiden og som rutenett på referansesiden."
+                actionLabel="Legg til første logo"
+                onAction={addLogo}
+              />
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {logos.map((l) => (

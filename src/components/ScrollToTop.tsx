@@ -23,7 +23,7 @@ export default function ScrollToTop() {
           exit={{ opacity: 0, scale: 0.8 }}
           transition={{ duration: 0.2 }}
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed left-5 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-white border border-border text-text-muted shadow-lg transition-all duration-300 hover:text-primary hover:shadow-xl sm:left-6 sm:bottom-6"
+          className="fixed left-5 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-white border border-border text-text-muted shadow-lg transition duration-300 hover:text-primary hover:shadow-xl sm:left-6 sm:bottom-6"
           style={{ bottom: "max(20px, env(safe-area-inset-bottom, 20px))" }}
           aria-label="Scroll til toppen"
         >

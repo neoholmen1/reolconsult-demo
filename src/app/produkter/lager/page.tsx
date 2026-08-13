@@ -131,8 +131,8 @@ export default async function LagerPage() {
       "Robuste lagerreoler i galvanisert stål — pallreoler, hyllereoler, dekkreoler, hjørnereoler og mer. Konkurransedyktige priser.",
     heroImage: "https://reolconsult.no/wp-content/uploads/2022/11/Hekta-Pa-Tur-2-scaled.jpg",
     breadcrumbLabel: "Lager",
-    ctaTitle: "Skal du planlegge nytt lager?",
-    ctaBody: "Send oss tegninger eller mål, så lager vi et uforpliktende forslag. Vi leverer og monterer over hele landet.",
+    ctaTitle: "Trenger du nytt lager?",
+    ctaBody: "Kontakt oss for gratis befaring og uforpliktende tilbud. Send oss tegninger eller mål, så lager vi et forslag tilpasset dine behov. Vi leverer og monterer over hele landet.",
     products: FALLBACK_PRODUCTS,
   });
   return <CategoryPageContent {...data} />;

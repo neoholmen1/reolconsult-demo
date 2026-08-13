@@ -23,33 +23,34 @@ export default async function CTASection() {
   );
 
   return (
-    <section className="bg-bg-light pt-10 pb-10 sm:pt-12 sm:pb-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden bg-surface dark:bg-[#0b0c0f]/55 dark:backdrop-blur-md py-20 md:py-28">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 -z-0 h-[420px] w-[680px] max-w-[90%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(220,38,38,0.05),transparent_70%)] blur-2xl" />
+      <div className="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <AnimateOnScroll className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-5xl md:text-6xl">
+          <h2 className="font-display text-[2.25rem] font-semibold tracking-[-0.02em] text-primary dark:text-white md:text-[3.25rem]" style={{ lineHeight: 1.05 }}>
             {title}
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-text-muted sm:text-xl whitespace-pre-line">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-text-muted dark:text-white/65 md:text-lg whitespace-pre-line">
             {body}
           </p>
-          <div className="mt-10 sm:mt-12 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
+          <div className="mt-10 flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
             <Link
               href="/kontakt"
-              className="w-full sm:w-auto rounded-full bg-accent px-10 py-4 text-center text-base font-semibold text-white transition-all duration-200 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
+              className="w-full sm:w-auto rounded-full bg-accent px-10 py-4 text-center text-base font-semibold text-white shadow-[0_1px_2px_rgba(220,38,38,0.15)] transition duration-200 hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(220,38,38,0.25)] active:translate-y-[1px]"
             >
               Kontakt oss
             </Link>
             {settings.phone && (
               <a
                 href={formatPhoneLink(settings.phone)}
-                className="w-full sm:w-auto rounded-full border border-primary/20 px-10 py-4 text-center text-base font-semibold text-primary transition-all duration-200 hover:bg-primary hover:text-white active:translate-y-[1px]"
+                className="w-full sm:w-auto rounded-full border border-primary/20 text-primary hover:bg-primary hover:text-white dark:border-white/25 dark:text-white dark:hover:bg-white dark:hover:text-[#0b0c0f] px-10 py-4 text-center text-base font-semibold transition duration-200 active:translate-y-[1px]"
               >
                 Ring {settings.phone}
               </a>
             )}
           </div>
           {settings.visit_address && (
-            <p className="mt-10 text-sm text-text-muted">
+            <p className="mt-8 text-sm text-text-muted dark:text-white/65">
               Eller besøk utstillingen vår: {settings.visit_address}
             </p>
           )}

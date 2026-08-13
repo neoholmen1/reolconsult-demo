@@ -20,6 +20,8 @@ export interface SectionDef {
   key: string;
   name: string;
   description?: string;
+  /** Kontekst-rik tekst som forklarer HVOR på den ferdige siden seksjonen vises. */
+  placement?: string;
   fields: FieldDef[];
 }
 
@@ -29,23 +31,25 @@ export interface PageDef {
   description?: string;
   /** Vises hero-redigering (knyttet til pages-tabellens hero_*-kolonner) */
   hasHero?: boolean;
+  /** Tekst som forklarer hvor på siden hero-blokken vises. */
+  heroPlacement?: string;
   /** Vises SEO-felter (meta_title, meta_description) */
   hasSeo?: boolean;
   sections?: SectionDef[];
 }
-
-const HERO_SECTION_DESC = "Stort topp-banner med tittel, tekst og CTA-knapper.";
 
 export const PAGE_DEFINITIONS: PageDef[] = [
   {
     slug: "home",
     name: "Forsiden",
     hasHero: true,
+    heroPlacement: "Stort topp-banner med bilde og knapper — det aller første besøkende ser når de kommer til reolconsult.no",
     hasSeo: true,
     sections: [
       {
         key: "hva_trenger_du",
         name: "Kategori-grid (Hva trenger du?)",
+        placement: "Rett under topp-banneret — kategori-rutenettet med Lager, Butikk, Kontor osv.",
         fields: [
           { key: "eyebrow", label: "Liten overskrift", type: "text" },
           { key: "title", label: "Tittel", type: "text" },
@@ -55,6 +59,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "about_teaser",
         name: "Om oss-blokk",
+        placement: "Midt på forsiden — boks med bilde og navngitt kontaktperson",
         description: "Boks med navngitt kontaktperson — for nå Agnete + Tore.",
         fields: [
           { key: "eyebrow", label: "Liten overskrift", type: "text" },
@@ -66,6 +71,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "used_sales_teaser",
         name: "Bruktsalg-teaser",
+        placement: "Under Om oss-blokken — teaser som fremhever bruktsalg-siden med bilde + knapp",
         fields: [
           { key: "badge", label: "Pille-tekst", type: "text", placeholder: "Spar penger" },
           { key: "title", label: "Tittel", type: "text" },
@@ -77,6 +83,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på forsiden — siste call-to-action før footer med kontaktinfo",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -85,6 +92,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "references_intro",
         name: "Referanselogo-stripe",
+        placement: "Helt nederst, rett over footer — overskriften over kunde-logo-stripen",
         description: "Logoer hentes fra Referanser-fanen. Her bare overskriften.",
         fields: [
           { key: "eyebrow", label: "Liten overskrift", type: "text" },
@@ -102,6 +110,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "intro",
         name: "Intro",
+        placement: "Helt øverst på Om oss-siden — det første besøkende ser, med bilde og brødtekst",
         fields: [
           { key: "eyebrow", label: "Liten overskrift", type: "text" },
           { key: "title", label: "Tittel", type: "text" },
@@ -112,6 +121,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "showroom",
         name: "Showroom",
+        placement: "Midt på siden — egen blokk om showroomet",
         fields: [
           { key: "eyebrow", label: "Liten overskrift", type: "text" },
           { key: "title", label: "Tittel", type: "text" },
@@ -121,6 +131,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "nokkelfakta",
         name: "Nøkkelfakta-overskrift",
+        placement: "Under Showroom-blokken — overskriften over fakta-kortene (40 år, antall ansatte, etc.)",
         fields: [
           { key: "title", label: "Overskrift", type: "text" },
         ],
@@ -137,6 +148,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "intro",
         name: "Intro",
+        placement: "Helt øverst på Kontakt-siden — over selve kontaktskjemaet",
         fields: [
           { key: "eyebrow", label: "Liten overskrift", type: "text" },
           { key: "title", label: "Tittel", type: "text" },
@@ -146,6 +158,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "form",
         name: "Skjema-tekst",
+        placement: "Like over selve kontaktskjemaet — overskrift og hjelpetekst som introduserer skjemafeltene",
         fields: [
           { key: "title", label: "Tittel over skjemaet", type: "text" },
           { key: "help", label: "Hjelpetekst", type: "textarea" },
@@ -163,6 +176,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "intro",
         name: "Intro",
+        placement: "Helt øverst på Bruktsalg-siden — det første besøkende ser, over bruktproduktene",
         fields: [
           { key: "badge", label: "Pille-tekst", type: "text" },
           { key: "title", label: "Tittel", type: "text" },
@@ -172,6 +186,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "fordeler",
         name: "Fordeler-overskrift",
+        placement: "Under produktlisten — overskriften over fordels-punktene (kvalitet, pris, miljø)",
         fields: [
           { key: "title", label: "Overskrift over fordelene", type: "text" },
         ],
@@ -188,6 +203,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "intro",
         name: "Intro",
+        placement: "Helt øverst på Referanser-siden — det første besøkende ser",
         fields: [
           { key: "eyebrow", label: "Liten overskrift", type: "text" },
           { key: "title", label: "Tittel", type: "text" },
@@ -197,6 +213,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "cases",
         name: "Cases-overskrift",
+        placement: "Midt på siden — overskriften over prosjekt-cases-rutenettet",
         fields: [
           { key: "title", label: "Overskrift over prosjekt-cases", type: "text" },
         ],
@@ -204,6 +221,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "logos",
         name: "Logo-overskrift",
+        placement: "Under cases — overskriften over kunde-logo-rutenettet",
         fields: [
           { key: "title", label: "Overskrift over logo-grid", type: "text" },
         ],
@@ -211,6 +229,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på siden — siste call-to-action før footer",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -228,6 +247,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "intro",
         name: "Intro",
+        placement: "Helt øverst på Kataloger-siden — over selve katalog-listen",
         fields: [
           { key: "eyebrow", label: "Liten overskrift", type: "text" },
           { key: "title", label: "Tittel", type: "text" },
@@ -237,6 +257,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på siden — under katalog-listen, siste CTA før footer",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -250,12 +271,13 @@ export const PAGE_DEFINITIONS: PageDef[] = [
     slug: "lager",
     name: "Lager",
     hasHero: true,
+    heroPlacement: "Stort topp-banner med bilde og knapper — det første besøkende ser på Lager-siden",
     hasSeo: true,
-    description: HERO_SECTION_DESC,
     sections: [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på siden — under produktene, siste CTA før footer",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -267,11 +289,13 @@ export const PAGE_DEFINITIONS: PageDef[] = [
     slug: "butikk",
     name: "Butikk",
     hasHero: true,
+    heroPlacement: "Stort topp-banner med bilde og knapper — det første besøkende ser på Butikk-siden",
     hasSeo: true,
     sections: [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på siden — under produktene, siste CTA før footer",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -283,11 +307,13 @@ export const PAGE_DEFINITIONS: PageDef[] = [
     slug: "kontor",
     name: "Kontor",
     hasHero: true,
+    heroPlacement: "Stort topp-banner med bilde og knapper — det første besøkende ser på Kontor-siden",
     hasSeo: true,
     sections: [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på siden — under produktene, siste CTA før footer",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -299,11 +325,13 @@ export const PAGE_DEFINITIONS: PageDef[] = [
     slug: "verksted",
     name: "Verksted og industri",
     hasHero: true,
+    heroPlacement: "Stort topp-banner med bilde og knapper — det første besøkende ser på Verksted-siden",
     hasSeo: true,
     sections: [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på siden — under produktene, siste CTA før footer",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -315,11 +343,13 @@ export const PAGE_DEFINITIONS: PageDef[] = [
     slug: "garderobe",
     name: "Garderobe",
     hasHero: true,
+    heroPlacement: "Stort topp-banner med bilde og knapper — det første besøkende ser på Garderobe-siden",
     hasSeo: true,
     sections: [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på siden — under produktene, siste CTA før footer",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -331,11 +361,13 @@ export const PAGE_DEFINITIONS: PageDef[] = [
     slug: "skole",
     name: "Skole og barnehage",
     hasHero: true,
+    heroPlacement: "Stort topp-banner med bilde og knapper — det første besøkende ser på Skole/barnehage-siden",
     hasSeo: true,
     sections: [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på siden — under produktene, siste CTA før footer",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -353,6 +385,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "intro",
         name: "Intro",
+        placement: "Øverst på produktoversikt-siden — over kategori-rutenettet",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },
@@ -361,6 +394,7 @@ export const PAGE_DEFINITIONS: PageDef[] = [
       {
         key: "cta_final",
         name: "Avsluttende CTA",
+        placement: "Nederst på siden — under kategori-rutenettet, siste CTA før footer",
         fields: [
           { key: "title", label: "Tittel", type: "text" },
           { key: "body", label: "Brødtekst", type: "textarea" },

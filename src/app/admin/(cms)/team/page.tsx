@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Users, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCurrentSite, type Site } from "@/lib/site";
 import MediaPicker from "@/components/admin/MediaPicker";
 import { revalidatePublicSite } from "@/app/actions/revalidate";
+import PageHeader from "@/components/admin/PageHeader";
+import EmptyState from "@/components/admin/EmptyState";
 
 type Member = {
   id: string;
@@ -125,21 +128,31 @@ export default function TeamPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-[#e5e5e5] bg-white px-6">
-        <h1 className="text-base font-semibold text-[#171717]">Team</h1>
-        <button onClick={newMember} className="rounded-full bg-[#dc2626] px-5 py-2 text-sm font-semibold text-white hover:bg-[#b91c1c]">
-          Ny ansatt
-        </button>
-      </div>
+      <PageHeader
+        title="Team"
+        subtitle="Ansatte vises på forsiden og kontaktsiden"
+        right={
+          <button
+            onClick={newMember}
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#dc2626] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#b91c1c]"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.25} /> Ny ansatt
+          </button>
+        }
+      />
 
-      <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+      <div className="flex-1 overflow-y-auto bg-[#fafafa] p-8 lg:p-10">
         <div className="mx-auto max-w-3xl space-y-3">
           {loading ? (
             <div className="flex h-40 items-center justify-center"><span className="text-sm text-[#a3a3a3]">Laster…</span></div>
           ) : members.length === 0 && !editing ? (
-            <div className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-[#e5e5e5] bg-white">
-              <p className="text-sm text-[#a3a3a3]">Ingen ansatte enda. Trykk «Ny ansatt» for å legge til.</p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="Ingen ansatte ennå"
+              description="Legg til ansatte med navn, telefon og portrettbilde — de vises automatisk på forsiden og kontaktsiden."
+              actionLabel="Legg til første ansatt"
+              onAction={newMember}
+            />
           ) : (
             members.map((m, i) => (
               <div key={m.id} className="flex items-center gap-4 rounded-xl border border-[#e5e5e5] bg-white p-4">

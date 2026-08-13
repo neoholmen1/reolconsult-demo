@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { getCurrentSite } from "@/lib/site";
 import { getPageSections, getSectionField } from "@/lib/cms";
@@ -8,66 +7,40 @@ export default async function UsedSalesTeaser() {
   const site = await getCurrentSite();
   const sections = site ? await getPageSections(site.id, "home") : [];
 
-  const badge = getSectionField(sections, "used_sales_teaser", "badge", "Spar penger");
-  const title = getSectionField(
+  const text = getSectionField(
     sections,
     "used_sales_teaser",
     "title",
-    "Brukte reoler til\ngode priser",
+    "Vi har også brukte reoler og innredning til gode priser",
   );
-  const body = getSectionField(
-    sections,
-    "used_sales_teaser",
-    "body",
-    "Vi har jevnlig inn brukte pallreoler, stålhyller og butikkinnredning i god stand. En rimelig løsning for deg som trenger innredning uten å sprenge budsjettet.",
-  );
-  const imageUrl = getSectionField(
-    sections,
-    "used_sales_teaser",
-    "image_url",
-    "https://reolconsult.no/wp-content/uploads/2022/11/Nettinghyller-4.jpg",
-  );
-  const ctaLabel = getSectionField(sections, "used_sales_teaser", "cta_label", "Se brukte produkter");
+  const ctaLabel = getSectionField(sections, "used_sales_teaser", "cta_label", "Se bruktsalg");
 
   return (
-    <section className="bg-white pt-10 pb-10 sm:pt-12 sm:pb-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="bg-surface dark:bg-[#0b0c0f]/55 dark:backdrop-blur-md py-12 md:py-16">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <AnimateOnScroll>
-          <div className="rounded-2xl sm:rounded-3xl border border-border bg-bg-light p-6 sm:p-14 lg:p-20">
-            <div className="grid grid-cols-1 items-center gap-8 sm:gap-10 lg:gap-16 lg:grid-cols-2">
-              <div>
-                <span className="inline-block rounded-full border border-green-600/20 bg-green-600/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-green-700">
-                  {badge}
-                </span>
-                <h2
-                  className="mt-6 text-3xl font-bold tracking-tight text-primary sm:text-4xl md:text-5xl whitespace-pre-line"
-                  style={{ lineHeight: 1.1 }}
-                >
-                  {title}
-                </h2>
-                <p className="mt-6 text-lg leading-relaxed text-text-muted whitespace-pre-line">
-                  {body}
-                </p>
-                <Link
-                  href="/bruktsalg"
-                  className="mt-10 inline-flex rounded-full bg-accent px-8 py-4 text-base font-semibold text-white transition-all duration-200 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
-                >
-                  {ctaLabel}
-                </Link>
+          <Link
+            href="/bruktsalg"
+            className="group flex flex-col items-start gap-4 rounded-3xl bg-surface border border-border shadow-[var(--shadow-soft)] dark:bg-white/[0.05] dark:border-white/10 dark:backdrop-blur-xl dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_20px_50px_-20px_rgba(0,0,0,0.65)] p-6 transition duration-200 hover:-translate-y-1 hover:border-accent/30 hover:shadow-[var(--shadow-lift)] dark:hover:bg-white/[0.08] sm:flex-row sm:items-center sm:justify-between sm:p-7"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent border border-border dark:bg-accent/20 dark:border-white/10 transition-colors duration-200 group-hover:bg-accent group-hover:text-white">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+                </svg>
               </div>
-
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.06)]">
-                <Image
-                  src={imageUrl}
-                  alt="Brukte reoler"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  className="object-cover"
-                  unoptimized
-                />
-              </div>
+              <p className="text-[15px] font-medium leading-snug text-primary dark:text-white md:text-base">
+                {text}
+              </p>
             </div>
-          </div>
+
+            <span className="inline-flex items-center gap-1.5 self-stretch rounded-full bg-bg-light text-primary dark:bg-white/10 dark:text-white px-4 py-2 text-sm font-semibold transition-all duration-200 group-hover:gap-2.5 group-hover:bg-primary group-hover:text-white sm:self-auto">
+              {ctaLabel}
+              <svg className="h-3.5 w-3.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.25}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </span>
+          </Link>
         </AnimateOnScroll>
       </div>
     </section>

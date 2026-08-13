@@ -70,13 +70,13 @@ export default function ProductModal({ product, onClose }: Props) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-h-[100dvh] sm:max-w-[800px] sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl"
+            className="relative w-full max-h-[100dvh] sm:max-w-[800px] sm:max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-surface shadow-[var(--shadow-float)]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white text-[#dc2626] shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-200 ease-in-out hover:bg-[#dc2626] hover:text-white hover:scale-110 active:translate-y-[1px]"
+              className="absolute top-4 right-4 z-20 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white text-accent shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition duration-200 ease-in-out hover:bg-accent hover:text-white hover:scale-110 active:translate-y-[1px]"
               aria-label="Lukk"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -87,13 +87,14 @@ export default function ProductModal({ product, onClose }: Props) {
             {/* Image gallery */}
             {product.images && product.images.length > 0 ? (
               <div className="relative">
-                <div className="relative aspect-[16/9] overflow-hidden rounded-t-2xl bg-[#1a1a1a]">
+                <div className="relative aspect-[16/9] overflow-hidden rounded-t-3xl bg-primary">
                   <Image
                     src={product.images[currentImage]}
                     alt={`${product.title} ${currentImage + 1}`}
                     fill
                     sizes="800px"
                     className="object-contain"
+                    unoptimized
                   />
                 </div>
 
@@ -105,7 +106,7 @@ export default function ProductModal({ product, onClose }: Props) {
                           p === 0 ? product.images!.length - 1 : p - 1
                         )
                       }
-                      className="absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:scale-105 active:translate-y-[1px]"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-text-muted shadow-lg backdrop-blur-sm transition duration-200 hover:bg-white hover:scale-105 active:translate-y-[1px]"
                       aria-label="Forrige bilde"
                     >
                       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -119,7 +120,7 @@ export default function ProductModal({ product, onClose }: Props) {
                           p === product.images!.length - 1 ? 0 : p + 1
                         )
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:scale-105 active:translate-y-[1px]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-text-muted shadow-lg backdrop-blur-sm transition duration-200 hover:bg-white hover:scale-105 active:translate-y-[1px]"
                       aria-label="Neste bilde"
                     >
                       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -132,7 +133,7 @@ export default function ProductModal({ product, onClose }: Props) {
                         <button
                           key={i}
                           onClick={() => setCurrentImage(i)}
-                          className={`h-2 rounded-full transition-all duration-300 ${
+                          className={`h-2 rounded-full transition duration-300 ${
                             i === currentImage
                               ? "w-6 bg-white"
                               : "w-2 bg-white/50 hover:bg-white/70"
@@ -148,7 +149,7 @@ export default function ProductModal({ product, onClose }: Props) {
 
             {/* Content */}
             <div className="p-6 sm:p-8">
-              <h2 className="text-2xl font-bold text-primary mb-4">
+              <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.02em] text-primary mb-4">
                 {product.title}
               </h2>
 
@@ -170,8 +171,8 @@ export default function ProductModal({ product, onClose }: Props) {
               )}
 
               <Link
-                href="/kontakt"
-                className="flex w-full sm:inline-flex sm:w-auto items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
+                href={`/kontakt?produkt=${encodeURIComponent(product.title)}`}
+                className="flex w-full sm:inline-flex sm:w-auto items-center justify-center gap-2 rounded-full bg-accent px-8 py-4 text-sm font-semibold text-white transition hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(220,38,38,0.25)] active:translate-y-[1px]"
               >
                 Kontakt oss om dette
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

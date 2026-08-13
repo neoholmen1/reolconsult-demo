@@ -3,11 +3,13 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
+import { ChevronRight, ExternalLink, Search, Sparkles, MapPin } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCurrentSite, type Site } from "@/lib/site";
 import { type Page, type PageSection } from "@/lib/cms";
 import { savePageHero, savePageSections, buildSectionMap } from "@/lib/page-content";
 import { getPageDef, type PageDef, type FieldDef } from "@/lib/page-definitions";
+import { getPageMeta, TONE_STYLES } from "@/lib/page-meta";
 import SaveBar from "@/components/admin/SaveBar";
 import UnsavedChangesGuard from "@/components/admin/UnsavedChangesGuard";
 import RichTextEditor from "@/components/admin/RichTextEditor";
@@ -177,13 +179,21 @@ export default function PageEditor() {
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#dc2626] border-t-transparent" />
+      <div className="flex flex-1 items-center justify-center bg-[#fafaf9]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#171717] border-t-transparent" />
       </div>
     );
   }
 
   const previewHref = slug === "home" ? "/" : `/${slug}`;
+
+  // Bygg en flat liste over seksjoner for nummerering + ankere
+  const sectionList: { id: string; label: string; placement: string }[] = [];
+  if (def.hasHero) sectionList.push({ id: "hero", label: "Topp-banner", placement: def.heroPlacement ?? "Topp av siden" });
+  def.sections?.forEach((s) => {
+    sectionList.push({ id: s.key, label: s.name, placement: s.placement ?? "" });
+  });
+  if (def.hasSeo) sectionList.push({ id: "seo", label: "SEO", placement: "Vises ikke på siden — Google og delingslinker" });
 
   return (
     <>
@@ -198,123 +208,220 @@ export default function PageEditor() {
           <Link
             href={previewHref}
             target="_blank"
-            className="rounded-full border border-[#e5e5e5] px-4 py-2 text-sm font-medium text-[#404040] transition-colors hover:bg-[#f5f5f5]"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#ececec] bg-white px-3.5 py-2 text-[12.5px] font-medium text-[#525252] transition duration-150 hover:border-[#d4d4d4] hover:text-[#171717]"
           >
-            Forhåndsvis ↗
+            Forhåndsvis <ExternalLink className="h-3 w-3" strokeWidth={2} />
           </Link>
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-6 lg:p-8">
-        <div className="mx-auto max-w-3xl space-y-6">
-          <div>
-            <Link
-              href="/admin/innhold"
-              className="inline-flex items-center gap-1 text-xs text-[#737373] hover:text-[#171717]"
-            >
-              ← Tilbake til alle sider
-            </Link>
-          </div>
+      <div className="flex-1 overflow-y-auto bg-[#fafaf9]">
+        <div className="mx-auto max-w-3xl space-y-5 p-6 lg:p-10">
+          <PageIntro
+            slug={slug}
+            name={def.name}
+            previewHref={previewHref}
+            sections={sectionList}
+          />
 
           {/* Hero */}
           {def.hasHero && site && (
-            <Card title="Hero / topbilde">
-              <div className="space-y-4">
-                <MediaPicker
-                  value={hero.hero_image_url || null}
-                  onChange={(url) => updateHero("hero_image_url", url ?? "")}
-                  siteId={site.id}
-                  defaultCategory="hero"
-                  label="Bakgrunnsbilde"
-                />
-                <FieldText
-                  label="Liten overskrift over"
-                  value={hero.hero_eyebrow}
-                  onChange={(v) => updateHero("hero_eyebrow", v)}
-                  placeholder="F.eks. SIDEN 1984"
-                />
-                <FieldTextarea
-                  label="Hovedtittel"
-                  value={hero.hero_title}
-                  onChange={(v) => updateHero("hero_title", v)}
-                  rows={2}
-                />
-                <FieldTextarea
-                  label="Undertekst"
-                  value={hero.hero_subtitle}
-                  onChange={(v) => updateHero("hero_subtitle", v)}
-                  rows={3}
-                />
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FieldText
-                    label="Primær knapp – tekst"
-                    value={hero.hero_cta_primary_label}
-                    onChange={(v) => updateHero("hero_cta_primary_label", v)}
-                  />
-                  <FieldText
-                    label="Primær knapp – lenke"
-                    value={hero.hero_cta_primary_href}
-                    onChange={(v) => updateHero("hero_cta_primary_href", v)}
-                    placeholder="/kontakt"
-                  />
-                  <FieldText
-                    label="Sekundær knapp – tekst"
-                    value={hero.hero_cta_secondary_label}
-                    onChange={(v) => updateHero("hero_cta_secondary_label", v)}
-                  />
-                  <FieldText
-                    label="Sekundær knapp – lenke"
-                    value={hero.hero_cta_secondary_href}
-                    onChange={(v) => updateHero("hero_cta_secondary_href", v)}
-                    placeholder="/produkter"
-                  />
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {/* Sections */}
-          {site &&
-            def.sections?.map((section) => (
-              <Card key={section.key} title={section.name} description={section.description}>
+              <Card
+                id="hero"
+                step="Topp-banner"
+                placement={def.heroPlacement ?? "Helt øverst på siden — det første besøkende ser"}
+                title="Hero / topbilde"
+              >
                 <div className="space-y-4">
-                  {section.fields.map((field) => (
-                    <FieldRenderer
-                      key={field.key}
-                      field={field}
-                      value={sectionValues[section.key]?.[field.key] ?? ""}
-                      onChange={(v) => updateSection(section.key, field.key, v)}
-                      siteId={site.id}
+                  <MediaPicker
+                    value={hero.hero_image_url || null}
+                    onChange={(url) => updateHero("hero_image_url", url ?? "")}
+                    siteId={site.id}
+                    defaultCategory="hero"
+                    label="Bakgrunnsbilde"
+                  />
+                  <FieldText
+                    label="Liten overskrift over"
+                    value={hero.hero_eyebrow}
+                    onChange={(v) => updateHero("hero_eyebrow", v)}
+                    placeholder="F.eks. SIDEN 1984"
+                  />
+                  <FieldTextarea
+                    label="Hovedtittel"
+                    value={hero.hero_title}
+                    onChange={(v) => updateHero("hero_title", v)}
+                    rows={2}
+                  />
+                  <FieldTextarea
+                    label="Undertekst"
+                    value={hero.hero_subtitle}
+                    onChange={(v) => updateHero("hero_subtitle", v)}
+                    rows={3}
+                  />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FieldText
+                      label="Primær knapp – tekst"
+                      value={hero.hero_cta_primary_label}
+                      onChange={(v) => updateHero("hero_cta_primary_label", v)}
                     />
-                  ))}
+                    <FieldText
+                      label="Primær knapp – lenke"
+                      value={hero.hero_cta_primary_href}
+                      onChange={(v) => updateHero("hero_cta_primary_href", v)}
+                      placeholder="/kontakt"
+                    />
+                    <FieldText
+                      label="Sekundær knapp – tekst"
+                      value={hero.hero_cta_secondary_label}
+                      onChange={(v) => updateHero("hero_cta_secondary_label", v)}
+                    />
+                    <FieldText
+                      label="Sekundær knapp – lenke"
+                      value={hero.hero_cta_secondary_href}
+                      onChange={(v) => updateHero("hero_cta_secondary_href", v)}
+                      placeholder="/produkter"
+                    />
+                  </div>
                 </div>
               </Card>
-            ))}
+            )}
 
-          {/* SEO */}
-          {def.hasSeo && (
-            <Card
-              title="Søkemotor-data (SEO)"
-              description="Hva som vises i Google og når lenken deles."
-            >
-              <div className="space-y-4">
-                <FieldText
-                  label="Sidetittel (vises i Google og i fanen)"
-                  value={hero.meta_title}
-                  onChange={(v) => updateHero("meta_title", v)}
-                />
-                <FieldTextarea
-                  label="Meta-beskrivelse (vises under tittelen i Google)"
-                  value={hero.meta_description}
-                  onChange={(v) => updateHero("meta_description", v)}
-                  rows={3}
-                />
-              </div>
-            </Card>
-          )}
+            {/* Sections */}
+            {site &&
+              def.sections?.map((section, i) => {
+                const total = def.sections!.length;
+                const stepLabel = `Seksjon ${i + 1} av ${total}`;
+                return (
+                  <Card
+                    key={section.key}
+                    id={section.key}
+                    step={stepLabel}
+                    placement={section.placement ?? section.description ?? ""}
+                    title={section.name}
+                    description={section.placement ? section.description : undefined}
+                  >
+                    <div className="space-y-4">
+                      {section.fields.map((field) => (
+                        <FieldRenderer
+                          key={field.key}
+                          field={field}
+                          value={sectionValues[section.key]?.[field.key] ?? ""}
+                          onChange={(v) => updateSection(section.key, field.key, v)}
+                          siteId={site.id}
+                        />
+                      ))}
+                    </div>
+                  </Card>
+                );
+              })}
+
+            {/* SEO */}
+            {def.hasSeo && (
+              <Card
+                id="seo"
+                step="Søkemotor"
+                placement="Vises ikke på selve siden — dette er det Google og Facebook viser i søk og delingslinker"
+                title="Søkemotor-data (SEO)"
+                icon={Search}
+              >
+                <div className="space-y-4">
+                  <FieldText
+                    label="Sidetittel (vises i Google og i fanen)"
+                    value={hero.meta_title}
+                    onChange={(v) => updateHero("meta_title", v)}
+                  />
+                  <FieldTextarea
+                    label="Meta-beskrivelse (vises under tittelen i Google)"
+                    value={hero.meta_description}
+                    onChange={(v) => updateHero("meta_description", v)}
+                    rows={3}
+                  />
+                </div>
+              </Card>
+            )}
         </div>
       </div>
     </>
+  );
+}
+
+function PageIntro({
+  slug,
+  name,
+  previewHref,
+  sections,
+}: {
+  slug: string;
+  name: string;
+  previewHref: string;
+  sections: { id: string; label: string; placement: string }[];
+}) {
+  const meta = getPageMeta(slug);
+  const tone = meta ? TONE_STYLES[meta.tone] : null;
+  const Icon = meta?.icon ?? Sparkles;
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="flex items-start gap-5 p-6">
+        <div
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${
+            tone?.bg ?? "from-stone-50 to-stone-100/40"
+          } ring-1 ring-inset ${tone?.ring ?? "ring-stone-200"} ${tone?.icon ?? "text-stone-700"}`}
+        >
+          <Icon className="h-6 w-6" strokeWidth={1.5} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1 text-[11px] text-[#a3a3a3]">
+            <Link href="/admin/nettside" className="font-medium hover:text-[#171717]">Nettside</Link>
+            <ChevronRight className="h-3 w-3" strokeWidth={2} />
+            <span className="font-medium">{meta?.group ?? "Sider"}</span>
+            <ChevronRight className="h-3 w-3" strokeWidth={2} />
+            <span className="font-medium text-[#171717]">{name}</span>
+          </div>
+          <div className="mt-1 flex items-baseline gap-2.5">
+            <h2 className="text-[20px] font-semibold tracking-tight text-[#171717]">{name}</h2>
+            <a
+              href={`https://reolconsult.no${previewHref}`}
+              target="_blank"
+              rel="noopener"
+              className="group inline-flex items-center gap-1 rounded-md bg-[#fafaf9] px-2 py-0.5 font-mono text-[11px] text-[#737373] transition-colors duration-150 hover:bg-[#f5f5f4] hover:text-[#171717]"
+            >
+              reolconsult.no{previewHref === "/" ? "" : previewHref}
+              <ExternalLink className="h-2.5 w-2.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100" strokeWidth={2} />
+            </a>
+          </div>
+          {meta?.description && (
+            <p className="mt-2.5 text-[13px] leading-relaxed text-[#525252]">{meta.description}</p>
+          )}
+        </div>
+        <Link
+          href={previewHref}
+          target="_blank"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#ececec] bg-white px-3.5 py-2 text-[12px] font-medium text-[#525252] transition duration-150 hover:border-[#d4d4d4] hover:text-[#171717]"
+        >
+          Forhåndsvis side <ExternalLink className="h-3 w-3" strokeWidth={2} />
+        </Link>
+      </div>
+
+      {sections.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-[#ececec] bg-[#fafaf9] px-6 py-3">
+          <span className="mr-1 text-[10.5px] font-medium uppercase tracking-wider text-[#a3a3a3]">
+            {sections.length} {sections.length === 1 ? "seksjon" : "seksjoner"}
+          </span>
+          {sections.map((s, i) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              title={s.placement}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#ececec] bg-white px-2.5 py-1 text-[11.5px] font-medium text-[#525252] transition duration-150 hover:border-[#d4d4d4] hover:text-[#171717]"
+            >
+              <span className="text-[10px] text-[#a3a3a3]">{i + 1}</span>
+              {s.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -323,19 +430,53 @@ export default function PageEditor() {
 // ────────────────────────────────────────────────────────────
 
 function Card({
+  id,
+  step,
+  placement,
   title,
   description,
+  icon: Icon,
   children,
 }: {
+  id?: string;
+  step?: string;
+  placement?: string;
   title: string;
   description?: string;
+  icon?: typeof ChevronRight;
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-      <h3 className="text-sm font-semibold text-[#171717]">{title}</h3>
-      {description && <p className="mt-1 text-xs text-[#a3a3a3]">{description}</p>}
-      <div className="mt-4">{children}</div>
+    <section
+      id={id}
+      className="scroll-mt-24 overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+    >
+      <div className="border-b border-[#ececec] bg-[#fafaf9] px-6 py-4">
+        <div className="flex items-center gap-2">
+          {step && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#525252] ring-1 ring-[#ececec]">
+              {step}
+            </span>
+          )}
+        </div>
+        <div className="mt-2 flex items-start gap-2">
+          {Icon && <Icon className="mt-0.5 h-4 w-4 text-[#737373]" strokeWidth={1.75} />}
+          <div className="flex-1">
+            <h3 className="text-[15px] font-semibold tracking-tight text-[#171717]">{title}</h3>
+            {description && <p className="mt-0.5 text-[12.5px] text-[#737373]">{description}</p>}
+          </div>
+        </div>
+        {placement && (
+          <div className="mt-3 flex items-start gap-2 rounded-lg border border-rose-100 bg-rose-50/40 px-3 py-2">
+            <MapPin className="mt-px h-3.5 w-3.5 shrink-0 text-[#dc2626]" strokeWidth={1.75} />
+            <p className="text-[12px] leading-snug text-[#525252]">
+              <span className="font-medium text-[#171717]">Hvor på siden: </span>
+              {placement}
+            </p>
+          </div>
+        )}
+      </div>
+      <div className="p-6">{children}</div>
     </section>
   );
 }
@@ -355,15 +496,15 @@ function FieldText({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium text-[#737373]">{label}</span>
+      <span className="text-[12px] font-medium text-[#404040]">{label}</span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
+        className="mt-1.5 w-full rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
       />
-      {help && <span className="mt-1 block text-[11px] text-[#a3a3a3]">{help}</span>}
+      {help && <span className="mt-1.5 block text-[11px] text-[#a3a3a3]">{help}</span>}
     </label>
   );
 }
@@ -383,13 +524,13 @@ function FieldTextarea({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium text-[#737373]">{label}</span>
+      <span className="text-[12px] font-medium text-[#404040]">{label}</span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
+        className="mt-1.5 w-full resize-y rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
       />
     </label>
   );
@@ -430,11 +571,11 @@ function FieldRenderer({
     case "richtext":
       return (
         <div>
-          <span className="text-xs font-medium text-[#737373]">{field.label}</span>
-          <div className="mt-1">
+          <span className="text-[12px] font-medium text-[#404040]">{field.label}</span>
+          <div className="mt-1.5">
             <RichTextEditor value={value} onChange={onChange} placeholder={field.placeholder} />
           </div>
-          {field.help && <span className="mt-1 block text-[11px] text-[#a3a3a3]">{field.help}</span>}
+          {field.help && <span className="mt-1.5 block text-[11px] text-[#a3a3a3]">{field.help}</span>}
         </div>
       );
     case "image":

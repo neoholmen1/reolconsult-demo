@@ -16,10 +16,10 @@ export default async function Personvern() {
 
   return (
     <div>
-      <section className="bg-white py-16 sm:py-24">
+      <section className="bg-surface-warm py-16 sm:py-24">
         <div className="mx-auto max-w-[700px] px-4 sm:px-6">
           <AnimateOnScroll>
-            <h1 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
+            <h1 className="font-display text-4xl font-semibold tracking-[-0.02em] text-primary sm:text-5xl">
               Personvernerklæring
             </h1>
             <p className="mt-3 text-sm text-text-muted">
@@ -28,9 +28,9 @@ export default async function Personvern() {
           </AnimateOnScroll>
 
           <AnimateOnScroll delay={0.1}>
-            <div className="mt-12 space-y-10 text-[15px] leading-relaxed text-[#6b7280]">
+            <div className="mt-12 space-y-10 text-[15px] leading-relaxed text-text-muted">
               <div>
-                <h2 className="mb-3 text-lg font-bold text-primary">
+                <h2 className="mb-3 font-display text-xl font-semibold tracking-[-0.02em] text-primary">
                   Behandlingsansvarlig
                 </h2>
                 <p>
@@ -51,7 +51,7 @@ export default async function Personvern() {
               </div>
 
               <div>
-                <h2 className="mb-3 text-lg font-bold text-primary">
+                <h2 className="mb-3 font-display text-xl font-semibold tracking-[-0.02em] text-primary">
                   Hvilke opplysninger vi samler inn
                 </h2>
                 <ul className="list-disc space-y-1.5 pl-5">
@@ -59,7 +59,7 @@ export default async function Personvern() {
                     Kontaktinformasjon du oppgir via kontaktskjema (navn, e-post,
                     telefon, melding)
                   </li>
-                  <li>Meldinger du sender via chatboten på nettsiden</li>
+                  <li>Meldinger du sender via AI-assistenten på nettsiden</li>
                   <li>
                     Teknisk informasjon som IP-adresse, nettlesertype og
                     operativsystem via informasjonskapsler
@@ -68,7 +68,7 @@ export default async function Personvern() {
               </div>
 
               <div>
-                <h2 className="mb-3 text-lg font-bold text-primary">
+                <h2 className="mb-3 font-display text-xl font-semibold tracking-[-0.02em] text-primary">
                   Formål med behandlingen
                 </h2>
                 <ul className="list-disc space-y-1.5 pl-5">
@@ -79,7 +79,7 @@ export default async function Personvern() {
               </div>
 
               <div>
-                <h2 className="mb-3 text-lg font-bold text-primary">
+                <h2 className="mb-3 font-display text-xl font-semibold tracking-[-0.02em] text-primary">
                   Informasjonskapsler
                 </h2>
                 <ul className="list-disc space-y-1.5 pl-5">
@@ -96,7 +96,7 @@ export default async function Personvern() {
               </div>
 
               <div>
-                <h2 className="mb-3 text-lg font-bold text-primary">
+                <h2 className="mb-3 font-display text-xl font-semibold tracking-[-0.02em] text-primary">
                   Deling av opplysninger
                 </h2>
                 <ul className="list-disc space-y-1.5 pl-5">
@@ -114,7 +114,7 @@ export default async function Personvern() {
               </div>
 
               <div>
-                <h2 className="mb-3 text-lg font-bold text-primary">
+                <h2 className="mb-3 font-display text-xl font-semibold tracking-[-0.02em] text-primary">
                   Dine rettigheter
                 </h2>
                 <ul className="list-disc space-y-1.5 pl-5">
@@ -138,7 +138,7 @@ export default async function Personvern() {
               </div>
 
               <div>
-                <h2 className="mb-3 text-lg font-bold text-primary">
+                <h2 className="mb-3 font-display text-xl font-semibold tracking-[-0.02em] text-primary">
                   Lagring
                 </h2>
                 <ul className="list-disc space-y-1.5 pl-5">
@@ -151,7 +151,7 @@ export default async function Personvern() {
               </div>
 
               <div>
-                <h2 className="mb-3 text-lg font-bold text-primary">
+                <h2 className="mb-3 font-display text-xl font-semibold tracking-[-0.02em] text-primary">
                   Kontakt
                 </h2>
                 <p>

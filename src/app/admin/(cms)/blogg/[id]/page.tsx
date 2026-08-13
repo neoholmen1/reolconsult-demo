@@ -115,7 +115,7 @@ export default function BloggEditor() {
     setStatus("saved");
   }
 
-  if (loading) return <div className="flex flex-1 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-[#dc2626] border-t-transparent" /></div>;
+  if (loading) return <div className="flex flex-1 items-center justify-center bg-[#fafaf9]"><div className="h-8 w-8 animate-spin rounded-full border-2 border-[#171717] border-t-transparent" /></div>;
 
   return (
     <>
@@ -128,26 +128,28 @@ export default function BloggEditor() {
         errorMessage={errorMessage}
         rightContent={
           <>
-            <Link href="/admin/blogg" className="rounded-full border border-[#e5e5e5] px-4 py-2 text-sm font-medium text-[#404040] hover:bg-[#f5f5f5]">← Til listen</Link>
+            <Link href="/admin/blogg" className="inline-flex items-center gap-1.5 rounded-full border border-[#ececec] bg-white px-3.5 py-2 text-[12.5px] font-medium text-[#525252] transition duration-150 hover:border-[#d4d4d4] hover:text-[#171717]">← Til listen</Link>
             {post.status === "draft" ? (
-              <button onClick={() => save("published")} disabled={status === "saving"} className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">Publiser</button>
+              <button onClick={() => save("published")} disabled={status === "saving"} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-600 bg-white px-3.5 py-2 text-[12.5px] font-semibold text-emerald-700 transition duration-150 hover:bg-emerald-50 disabled:opacity-50">Publiser</button>
             ) : (
-              <button onClick={() => save("draft")} disabled={status === "saving"} className="rounded-full border border-[#e5e5e5] px-4 py-2 text-sm font-medium text-[#404040] hover:bg-[#f5f5f5]">Avpubliser</button>
+              <button onClick={() => save("draft")} disabled={status === "saving"} className="inline-flex items-center gap-1.5 rounded-full border border-[#ececec] bg-white px-3.5 py-2 text-[12.5px] font-medium text-[#525252] transition duration-150 hover:border-[#d4d4d4] hover:text-[#171717]">Avpubliser</button>
             )}
           </>
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-6 lg:p-8">
-        <div className="mx-auto max-w-3xl space-y-6">
+      <div className="flex-1 overflow-y-auto bg-[#fafaf9] p-6 lg:p-10">
+        <div className="mx-auto max-w-3xl space-y-5">
           <Card title="Grunninfo">
             <div className="space-y-4">
               <FieldText label="Tittel" value={post.title} onChange={(v) => update("title", v)} />
-              <FieldText label="Slug (URL-vennlig)" value={post.slug} onChange={(v) => update("slug", v)} placeholder="hvordan-velge-pallreoler" />
-              <FieldText label="Forfatter" value={post.author_name} onChange={(v) => update("author_name", v)} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FieldText label="Slug" value={post.slug} onChange={(v) => update("slug", v)} placeholder="hvordan-velge-pallreoler" />
+                <FieldText label="Forfatter" value={post.author_name} onChange={(v) => update("author_name", v)} />
+              </div>
               <label className="block">
-                <span className="text-xs font-medium text-[#737373]">Ingress (kort sammendrag)</span>
-                <textarea value={post.excerpt} onChange={(e) => update("excerpt", e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20" />
+                <span className="text-[12px] font-medium text-[#404040]">Ingress <span className="text-[11px] font-normal text-[#a3a3a3]">(kort sammendrag)</span></span>
+                <textarea value={post.excerpt} onChange={(e) => update("excerpt", e.target.value)} rows={2} className="mt-1.5 w-full resize-y rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
               </label>
               {site && <MediaPicker value={post.cover_image_url} onChange={(url) => update("cover_image_url", url)} siteId={site.id} defaultCategory="blog" label="Forsidebilde" />}
             </div>
@@ -164,9 +166,11 @@ export default function BloggEditor() {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-      <h3 className="text-sm font-semibold text-[#171717]">{title}</h3>
-      <div className="mt-4">{children}</div>
+    <section className="overflow-hidden rounded-2xl border border-[#ececec] bg-white">
+      <div className="border-b border-[#ececec] bg-[#fafaf9] px-6 py-3">
+        <h3 className="text-[13px] font-semibold tracking-tight text-[#171717]">{title}</h3>
+      </div>
+      <div className="p-6">{children}</div>
     </section>
   );
 }
@@ -174,8 +178,8 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function FieldText({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium text-[#737373]">{label}</span>
-      <input type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20" />
+      <span className="text-[12px] font-medium text-[#404040]">{label}</span>
+      <input type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="mt-1.5 w-full rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
     </label>
   );
 }

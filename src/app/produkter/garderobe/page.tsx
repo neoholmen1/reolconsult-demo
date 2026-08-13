@@ -61,8 +61,8 @@ export default async function GarderobePage() {
       "Garderoberom skal være praktiske, men også trivelige å være i. Med våre garderobeskap bestemmer du selv farger, materialer, lås og funksjoner.",
     heroImage: "https://reolconsult.no/wp-content/uploads/2023/11/IMG_1148-scaled.jpg",
     breadcrumbLabel: "Garderobe",
-    ctaTitle: "Skal dere innrede nye garderobeskap?",
-    ctaBody: "Velg dørtype, materialer, lås og farger. Vi hjelper deg med å finne riktig løsning. Ta kontakt for et uforpliktende tilbud.",
+    ctaTitle: "Trenger du nye garderobeskap?",
+    ctaBody: "Kontakt oss for gratis befaring og uforpliktende tilbud. Velg dørtype, materialer, lås og farger — vi hjelper deg å finne riktig løsning.",
     products: FALLBACK_PRODUCTS,
   });
   return <CategoryPageContent {...data} />;
