@@ -3,6 +3,7 @@ import Image from "next/image";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { getCurrentSite } from "@/lib/site";
 import { getPageSections, getSectionField } from "@/lib/cms";
+import { ryddTekst } from "@/lib/tekst";
 
 export const metadata: Metadata = {
   title: "Om oss – Reol-Consult AS",
@@ -45,14 +46,15 @@ export default async function OmOss() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="grid items-center gap-14 md:grid-cols-2">
             <AnimateOnScroll>
-              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+              <p className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
+                <span className="h-px w-7 bg-accent/50" />
                 {introEyebrow}
-              </span>
-              <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-primary sm:text-4xl md:text-5xl">
+              </p>
+              <h1 className="mt-5 font-display text-[2.25rem] font-semibold leading-tight tracking-[-0.02em] text-primary md:text-5xl">
                 {introTitle}
               </h1>
               <div className="mt-6 text-lg leading-relaxed text-text-muted whitespace-pre-line">
-                {introBody}
+                {ryddTekst(introBody)}
               </div>
             </AnimateOnScroll>
 
@@ -62,7 +64,7 @@ export default async function OmOss() {
                 alt="Reol-Consult AS"
                 width={600}
                 height={400}
-                className="w-full rounded-2xl object-cover shadow-[0_30px_60px_rgba(0,0,0,0.12)]"
+                className="w-full rounded-[1.5rem] object-cover ring-1 ring-black/5 shadow-[var(--shadow-card)] sm:rounded-[2rem]"
                 unoptimized
               />
             </AnimateOnScroll>
@@ -71,10 +73,10 @@ export default async function OmOss() {
       </section>
 
       {/* Nøkkelfakta */}
-      <section className="bg-white py-16 sm:py-24">
+      <section className="bg-surface py-16 sm:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimateOnScroll>
-            <h2 className="text-center text-3xl font-bold tracking-tight text-primary md:text-4xl">
+            <h2 className="text-center font-display text-[2.25rem] font-semibold tracking-[-0.02em] text-primary md:text-5xl">
               {nokkelfaktaTitle}
             </h2>
           </AnimateOnScroll>
@@ -137,8 +139,8 @@ export default async function OmOss() {
               },
             ].map((item, i) => (
               <AnimateOnScroll key={item.title} delay={i * 0.1}>
-                <div className="rounded-2xl border border-border bg-white p-8 transition-shadow duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                <div className="h-full rounded-3xl border border-border bg-surface-warm p-8 shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
                     {item.icon}
                   </div>
                   <h3 className="mt-5 text-xl font-semibold text-primary">
@@ -159,10 +161,10 @@ export default async function OmOss() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="grid items-center gap-14 md:grid-cols-2">
             <AnimateOnScroll>
-              <div className="overflow-hidden rounded-2xl">
+              <div className="overflow-hidden rounded-[1.5rem] ring-1 ring-black/5 shadow-[var(--shadow-card)] sm:rounded-[2rem]">
                 <iframe
                   src="https://www.google.com/maps?q=Smiløkka+7,+3173+Vear,+Norway&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                  className="h-80 w-full rounded-2xl border-0"
+                  className="h-80 w-full border-0"
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -172,14 +174,15 @@ export default async function OmOss() {
             </AnimateOnScroll>
 
             <AnimateOnScroll delay={0.2}>
-              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+              <p className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
+                <span className="h-px w-7 bg-accent/50" />
                 {showroomEyebrow}
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight text-primary md:text-4xl">
+              </p>
+              <h2 className="mt-5 font-display text-[2.25rem] font-semibold tracking-[-0.02em] text-primary md:text-5xl">
                 {showroomTitle}
               </h2>
               <p className="mt-6 text-lg leading-relaxed text-text-muted whitespace-pre-line">
-                {showroomBody}
+                {ryddTekst(showroomBody)}
               </p>
               <div className="mt-8 space-y-3 text-text-muted">
                 <p>
@@ -198,7 +201,7 @@ export default async function OmOss() {
               </div>
               <a
                 href="/kontakt"
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-lg active:translate-y-[1px]"
+                className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 font-semibold text-white transition hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(220,38,38,0.25)] active:translate-y-[1px]"
               >
                 Kontakt oss
                 <svg

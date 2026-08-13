@@ -1,47 +1,163 @@
 @import "tailwindcss";
 
-@theme inline {
-  /* Primary — rent sort, ingen blåtone */
-  --color-primary: #171717;
-  --color-primary-light: #262626;
-  --color-primary-dark: #0a0a0a;
+/* Klasse-basert dark mode (manuell veksler), ikke prefers-color-scheme */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Ikke `inline`: da baker Tailwind verdiene rett inn i utility-klassene, og
+   .dark-overstyringene nederst i fila får ingen effekt. Uten `inline` peker
+   klassene på var(--color-*), som kan byttes ut i mørk modus. */
+@theme {
+  /* Primary — varm trekullsort (stone-tonet, ikke kald) */
+  --color-primary: #1c1917;
+  --color-primary-light: #292524;
+  --color-primary-dark: #0c0a09;
 
   /* Red accent */
   --color-accent: #dc2626;
   --color-accent-hover: #b91c1c;
   --color-accent-light: rgba(220, 38, 38, 0.08);
 
-  /* Backgrounds */
-  --color-bg-light: #faf8f6;
-  --color-bg-dark: #0a0a0a;
-  --color-bg-cool: #f5f5f5;
-  --color-surface: #ffffff;
-  --color-surface-elevated: #faf8f6;
+  /* Backgrounds — varme cream/sand-toner for premium-følelse */
+  --color-bg-light: #f3ece1;
+  --color-bg-sand: #eaddca;
+  --color-bg-dark: #0c0a09;
+  --color-bg-cool: #f0e9dd;
+  --color-surface: #fbf8f2;
+  --color-surface-warm: #ffffff;
+  --color-surface-elevated: #ffffff;
 
-  /* Text */
-  --color-text-dark: #171717;
-  --color-text-muted: #737373;
-  --color-text-light: #a3a3a3;
+  /* Text — varme neutrals */
+  --color-text-dark: #1c1917;
+  --color-text-muted: #78716c;
+  --color-text-light: #a8a29e;
 
-  /* Borders */
-  --color-border: rgba(0, 0, 0, 0.06);
-  --color-border-light: rgba(0, 0, 0, 0.04);
+  /* Borders — varm tone */
+  --color-border: rgba(28, 25, 23, 0.08);
+  --color-border-light: rgba(28, 25, 23, 0.05);
+
+  /* Premium skygge-skala (varm, lagdelt) */
+  --shadow-soft: 0 1px 2px rgba(28, 25, 23, 0.04), 0 2px 8px rgba(28, 25, 23, 0.04);
+  --shadow-card: 0 2px 4px rgba(28, 25, 23, 0.03), 0 8px 24px -6px rgba(28, 25, 23, 0.08);
+  --shadow-lift: 0 12px 28px -8px rgba(28, 25, 23, 0.14), 0 4px 10px -4px rgba(28, 25, 23, 0.08);
+  --shadow-float: 0 24px 56px -16px rgba(28, 25, 23, 0.22), 0 8px 20px -10px rgba(28, 25, 23, 0.12);
 
   /* Font */
   --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-fraunces), "DM Sans", Georgia, serif;
+
+  /* Standard for alle transition-utilities. Uten dette bruker Tailwind sin
+     egen ease-in-out, som ikke matcher bevegelsen ellers på siden. */
+  --default-transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  --default-transition-duration: 200ms;
+}
+
+/* Ett bevegelsessystem for hele siden. Før lå det fire ulike cubic-bezier-
+   kurver spredt rundt, som gjorde at like elementer beveget seg ulikt. */
+:root {
+  /* Standard UI-kurve: rask start, mykt stopp. Hover, farger, små skift. */
+  --ease-ui: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Entré-kurve for innhold som kommer inn i bildet. Lang, rolig utgang. */
+  --ease-entre: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --varighet-rask: 180ms;
+  --varighet-normal: 280ms;
+  --varighet-rolig: 520ms;
 }
 
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  scroll-behavior: smooth;
+  /* Ankerlenker skal ikke havne bak den faste headeren. */
+  scroll-padding-top: 6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
-  background: var(--color-surface);
+  /* Lys base som standard; mørk base settes av .dark. */
+  background: #f4efe7;
   color: var(--color-text-dark);
   font-family: var(--font-sans);
   overflow-x: hidden;
+}
+
+/* Mørk modus: samme tokens, mørke verdier. Alt som bruker bg-surface-warm,
+   text-text-dark, border-border osv. følger med automatisk — uten dette
+   rendret undersidene store hvite flater inne i et mørkt skall. Komponenter
+   med egne dark:-klasser overstyrer fortsatt disse. */
+.dark {
+  --color-bg-light: #0b0d11;
+  --color-bg-sand: #12141a;
+  --color-bg-cool: #0b0d11;
+  --color-surface: #101218;
+  --color-surface-warm: #0d0f14;
+  --color-surface-elevated: #171a21;
+
+  --color-text-dark: #f5f3f0;
+  --color-text-muted: #a5a29d;
+  --color-text-light: #7c7873;
+
+  --color-border: rgba(255, 255, 255, 0.10);
+  --color-border-light: rgba(255, 255, 255, 0.06);
+
+  /* Varme skygger blir usynlige på mørk bakgrunn — dypere og mer ugjennomsiktige. */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.35), 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 12px 28px -8px rgba(0, 0, 0, 0.6), 0 4px 10px -4px rgba(0, 0, 0, 0.45);
+  --shadow-float: 0 24px 56px -16px rgba(0, 0, 0, 0.7), 0 8px 20px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* --color-primary kan ikke snus i mørk modus: den brukes også som bakgrunn
+   (bg-primary på mørke knapper og seksjoner), som da ville blitt nesten hvit.
+   Overskriftene bruker text-primary, så bare tekst-varianten mappes om.
+   :where() holder spesifisiteten på (0,1,0) slik at en komponent med sin egen
+   dark:text-*-klasse fortsatt vinner over denne. */
+.dark :where(.text-primary) {
+  color: #f5f3f0;
+}
+
+.dark body {
+  /* Mørk base så det aldri glimter cream bak det globale glass-bakteppet. */
+  background: #08090b;
+  color: #f5f3f0;
+}
+
+/* Temaveksling: uten dette hopper hele siden brått fra cream til svart.
+   Klassen settes av ThemeProvider kun i det øyeblikket brukeren trykker, og
+   fjernes etterpå — en permanent transition på `*` ville kostet på alt annet.
+   Bare farger overgår; transform og layout holdes utenfor med vilje. */
+.tema-skifter,
+.tema-skifter *,
+.tema-skifter *::before,
+.tema-skifter *::after {
+  transition:
+    background-color 380ms var(--ease-ui),
+    border-color 380ms var(--ease-ui),
+    color 380ms var(--ease-ui),
+    fill 380ms var(--ease-ui),
+    stroke 380ms var(--ease-ui) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tema-skifter,
+  .tema-skifter *,
+  .tema-skifter *::before,
+  .tema-skifter *::after {
+    transition: none !important;
+  }
+}
+
+/* Display-serif — varm, editorial vekt på store overskrifter */
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
 }
 
 @layer base {
@@ -62,20 +178,67 @@ body {
   border-radius: 4px;
 }
 
-/* Button active states */
+/* Button active states — subtil press-effekt på alle pille-knapper */
 @layer base {
   a, button {
-    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* Eksplisitt liste, ikke `all`. Med `all` ble også bredde, høyde, padding
+       og margin animert, og hver hover trigget reflow av det som lå rundt.
+       Disse fem går på compositor/paint og er det som faktisk skal bevege seg. */
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+    transition-duration: var(--varighet-rask);
+    transition-timing-function: var(--ease-ui);
   }
 
   a[class*="rounded-full"][class*="bg-accent"]:active,
   button[class*="rounded-full"][class*="bg-accent"]:active {
-    transform: translateY(1px);
+    transform: translateY(1px) scale(0.985);
   }
 
   a[class*="rounded-full"][class*="border"]:active,
   button[class*="rounded-full"][class*="border"]:active {
-    transform: translateY(1px);
+    transform: translateY(1px) scale(0.985);
+  }
+}
+
+/* Underline-animasjon på inline-lenker i brødtekst */
+@layer base {
+  a[class*="underline"]:not([class*="rounded-full"]) {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    text-decoration: none;
+    transition: background-size 0.3s ease;
+  }
+
+  a[class*="underline"]:not([class*="rounded-full"]):hover {
+    background-size: 100% 1px;
+  }
+}
+
+/* Ord-for-ord avsløring av store overskrifter (se WordReveal.tsx).
+   `both` er poenget: siste keyframe blir stående, så teksten er synlig selv
+   om animasjonen aldri starter. */
+@keyframes word-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.9em);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.word-reveal__ord {
+  animation: word-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word-reveal__ord {
+    animation: none;
   }
 }
 
@@ -94,18 +257,18 @@ body {
   will-change: transform;
 }
 
-/* Ken Burns zoom */
+/* Ken Burns zoom — subtil, mindre aggressiv for å ikke forstørre evt komprimering */
 @keyframes ken-burns {
   from {
     transform: scale(1);
   }
   to {
-    transform: scale(1.05);
+    transform: scale(1.03);
   }
 }
 
 .animate-ken-burns {
-  animation: ken-burns 6s ease-out forwards;
+  animation: ken-burns 8s ease-out forwards;
 }
 
 /* Cookie banner slide-up */
@@ -152,4 +315,85 @@ body {
 @keyframes nav-draw {
   from { --draw-angle: 0deg; }
   to { --draw-angle: 360deg; }
+}
+
+/* Hårfin varm hairline mellom seksjoner */
+.section-hairline {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(28, 25, 23, 0.08), transparent);
+}
+
+/* Subtil film-grain over hele siden — gir premium dybde/tekstur */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Sakte drivende glød — animert mesh-dybde i hero */
+@keyframes glow-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, -3%, 0) scale(1.12); }
+}
+.animate-glow-drift {
+  animation: glow-drift 14s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes glow-drift-slow {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-5%, 4%, 0) scale(1.08); }
+}
+.animate-glow-drift-slow {
+  animation: glow-drift-slow 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Skinn-sveip over knapper/kort */
+@keyframes shine {
+  0% { transform: translateX(-120%) skewX(-20deg); }
+  100% { transform: translateX(220%) skewX(-20deg); }
+}
+
+/* Konsistent redaksjonell bildegrade — binder ujevne foto sammen.
+   Default = dempet/varm; .group:hover gjenoppretter full farge. */
+.img-grade {
+  filter: saturate(0.82) contrast(1.06) brightness(0.97);
+  transition: filter 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .img-grade {
+  filter: saturate(1.05) contrast(1.04) brightness(1);
+}
+
+/* Varm fargevask som legges over foto for kohesjon (multiply) */
+.img-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(140deg, rgba(220, 38, 38, 0.10), rgba(28, 25, 23, 0.04) 55%, rgba(28, 25, 23, 0.18));
+  mix-blend-mode: multiply;
+}
+
+/* Respekter brukerens motion-preferanse */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-marquee,
+  .animate-ken-burns,
+  .animate-glow-drift,
+  .animate-glow-drift-slow {
+    animation: none !important;
+  }
+  .grain-overlay {
+    display: none;
+  }
 }

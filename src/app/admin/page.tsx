@@ -2,6 +2,22 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import {
+  FileText,
+  Database,
+  BarChart3,
+  Bot,
+  Settings as SettingsIcon,
+  LogOut,
+  ChevronRight,
+  Upload,
+  Trash2,
+  ChevronDown,
+  Plus,
+  LayoutTemplate,
+  ArrowRight,
+  type LucideIcon,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
   getCurrentSite,
@@ -45,15 +61,23 @@ interface Document {
   uploaded_by: string;
 }
 
-type SidebarItem = "dokumenter" | "ekstra-info" | "statistikk" | "chatbot" | "innstillinger";
+type SidebarItem = "innstillinger" | "dokumenter" | "ekstra-info" | "statistikk" | "chatbot";
 
-const SIDEBAR_ITEMS: { key: SidebarItem; label: string }[] = [
-  { key: "dokumenter", label: "Dokumenter" },
-  { key: "ekstra-info", label: "Ekstra info" },
-  { key: "statistikk", label: "Statistikk" },
-  { key: "chatbot", label: "Chatbot" },
-  { key: "innstillinger", label: "Innstillinger" },
+const SIDEBAR_ITEMS: { key: SidebarItem; label: string; icon: LucideIcon }[] = [
+  { key: "innstillinger", label: "Innstillinger", icon: SettingsIcon },
+  { key: "dokumenter", label: "Dokumenter", icon: FileText },
+  { key: "ekstra-info", label: "Ekstra info", icon: Database },
+  { key: "statistikk", label: "Statistikk", icon: BarChart3 },
+  { key: "chatbot", label: "AI-assistent", icon: Bot },
 ];
+
+const ITEM_SUBTITLES: Record<SidebarItem, string> = {
+  innstillinger: "Kontaktinfo, åpningstider og sosiale medier",
+  dokumenter: "Last opp dokumenter AI-assistenten bruker for å svare kunder",
+  "ekstra-info": "Informasjon AI-assistenten bruker for å svare på pris og leveringstid",
+  statistikk: "Oversikt over kunnskapsbasen",
+  chatbot: "Test at AI-assistenten finner riktig informasjon",
+};
 
 const DOC_SECTIONS: { key: string; label: string }[] = [
   { key: "produkt", label: "PRODUKTER" },
@@ -104,7 +128,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
 
-  const [activeItem, setActiveItem] = useState<SidebarItem>("dokumenter");
+  const [activeItem, setActiveItem] = useState<SidebarItem>("innstillinger");
 
   // Ekstra info: accordion open category (null = all closed)
   const [openCategory, setOpenCategory] = useState<string | null>(null);
@@ -309,9 +333,17 @@ export default function AdminPage() {
       alert("Databasen er ikke satt opp ennå. Kjør migrasjon-SQL i Supabase SQL Editor først (se varsel øverst).");
       return;
     }
+    if (!site) {
+      alert("Fant ikke hvilken side dette gjelder — last siden på nytt.");
+      return;
+    }
     setSaving(true);
     const now = new Date().toISOString();
     const payload = {
+      // site_id er NOT NULL på chatbot_knowledge, og RLS-policyen er
+      // WITH CHECK (has_site_access(site_id)). Uten den feilet opprettelsen
+      // av en ny kategori — og feilen ble aldri vist.
+      site_id: site.id,
       category: activeCat.category,
       category_type: activeCat.category_type,
       description,
@@ -321,15 +353,23 @@ export default function AdminPage() {
       updated_at: now,
     };
     let success = false;
+    let feil: string | null = null;
     if (activeCat.id) {
       const { error } = await supabase.from("chatbot_knowledge").update(payload).eq("id", activeCat.id);
       success = !error;
+      feil = error?.message ?? null;
     } else {
       const { data, error } = await supabase.from("chatbot_knowledge").insert(payload).select("id").single();
+      feil = error?.message ?? null;
       if (!error && data) {
         success = true;
         setCategories((prev) => prev.map((c) => c.category === activeCat.category ? { ...c, id: data.id } : c));
       }
+    }
+    // Uten denne gikk en mislykket lagring helt stille: ingen «Lagret!», ingen
+    // feilmelding, bare en knapp som sluttet å spinne.
+    if (!success) {
+      alert("Kunne ikke lagre: " + (feil ?? "ukjent feil"));
     }
     if (success) {
       setCategories((prev) =>
@@ -415,7 +455,13 @@ export default function AdminPage() {
   // Delete document
   async function deleteDocument(id: string) {
     const { error } = await supabase.from("chatbot_documents").delete().eq("id", id);
-    if (!error) setDocuments((prev) => prev.filter((d) => d.id !== id));
+    if (error) {
+      // Feilet sletting gikk stille før: raden ble liggende i lista, og
+      // brukeren trodde klikket ikke registrerte seg.
+      alert("Kunne ikke slette dokumentet: " + error.message);
+      return;
+    }
+    setDocuments((prev) => prev.filter((d) => d.id !== id));
   }
 
   // Login
@@ -558,8 +604,8 @@ export default function AdminPage() {
   // Loading
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#dc2626] border-t-transparent" />
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#fafaf9]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#171717] border-t-transparent" />
       </div>
     );
   }
@@ -567,14 +613,50 @@ export default function AdminPage() {
   // Login
   if (!user) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#fafafa]">
-        <form onSubmit={handleLogin} className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
-          <h1 className="text-2xl font-bold text-[#171717]">Admin</h1>
-          <p className="mt-1 text-sm text-[#737373]">Logg inn for å administrere</p>
-          {loginError && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{loginError}</p>}
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-post" required className="mt-6 w-full rounded-xl border border-[#e5e5e5] bg-[#fafafa] px-4 py-3 text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20" />
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Passord" required className="mt-3 w-full rounded-xl border border-[#e5e5e5] bg-[#fafafa] px-4 py-3 text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20" />
-          <button type="submit" disabled={loggingIn} className="mt-6 w-full rounded-full bg-[#dc2626] py-3.5 font-semibold text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-50">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#fafaf9]">
+        <form
+          onSubmit={handleLogin}
+          className="w-full max-w-sm rounded-2xl border border-[#ececec] bg-white p-8 shadow-[0_20px_60px_-12px_rgba(0,0,0,0.08)]"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#dc2626] to-[#7f1d1d] text-[14px] font-bold tracking-tight text-white shadow-[0_2px_8px_-2px_rgba(220,38,38,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]">
+              R
+            </div>
+            <div>
+              <h1 className="text-[16px] font-semibold tracking-tight text-[#171717]">Reol-Consult</h1>
+              <p className="text-[11px] text-[#737373]">Admin-panel</p>
+            </div>
+          </div>
+          {loginError && (
+            <p className="mt-5 rounded-lg bg-red-50 px-3 py-2 text-[12.5px] text-red-700">{loginError}</p>
+          )}
+          <label className="mt-6 block">
+            <span className="text-[12px] font-medium text-[#404040]">E-post</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="navn@reolconsult.no"
+              required
+              className="mt-1.5 w-full rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+            />
+          </label>
+          <label className="mt-3 block">
+            <span className="text-[12px] font-medium text-[#404040]">Passord</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="mt-1.5 w-full rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={loggingIn}
+            className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-[#171717] py-3 text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] transition duration-150 hover:bg-[#000] hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] disabled:cursor-not-allowed disabled:bg-[#e5e5e4] disabled:text-[#a3a3a3] disabled:shadow-none"
+          >
             {loggingIn ? "Logger inn..." : "Logg inn"}
           </button>
         </form>
@@ -585,8 +667,8 @@ export default function AdminPage() {
   // Sjekker tilgang
   if (accessChecking) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#dc2626] border-t-transparent" />
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#fafaf9]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#171717] border-t-transparent" />
       </div>
     );
   }
@@ -594,16 +676,16 @@ export default function AdminPage() {
   // Ingen tilgang
   if (!siteRole) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#fafafa] p-6">
-        <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
-          <h1 className="text-2xl font-bold text-[#171717]">Ingen tilgang</h1>
-          <p className="mt-3 text-sm text-[#737373]">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#fafaf9] p-6">
+        <div className="w-full max-w-md rounded-2xl border border-[#ececec] bg-white p-8 shadow-[0_20px_60px_-12px_rgba(0,0,0,0.08)]">
+          <h1 className="text-[16px] font-semibold tracking-tight text-[#171717]">Ingen tilgang</h1>
+          <p className="mt-3 text-[13px] leading-relaxed text-[#737373]">
             Brukeren <span className="font-medium text-[#404040]">{user.email}</span> har ikke
             tilgang til {site?.name ?? "denne siten"}. Kontakt en administrator for å få tilgang.
           </p>
           <button
             onClick={() => supabase.auth.signOut()}
-            className="mt-6 w-full rounded-full bg-[#dc2626] py-3.5 font-semibold text-white transition-colors hover:bg-[#b91c1c]"
+            className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-[#171717] py-3 text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] transition duration-150 hover:bg-[#000] hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
           >
             Logg ut
           </button>
@@ -618,163 +700,197 @@ export default function AdminPage() {
     .filter((c) => c.updated_at)
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
 
-  return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#fafafa]">
-      {/* Top bar */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#e5e5e5] bg-white px-6">
-        <h1 className="text-lg font-bold text-[#171717]">Reolconsult Admin</h1>
-        <div className="flex items-center gap-3">
-          {(saved || settingsSaved) && <span className="rounded-full bg-emerald-50 px-4 py-1.5 text-sm font-medium text-emerald-600">Lagret!</span>}
-          <Link
-            href="/admin/bilder"
-            className="rounded-full border border-[#e5e5e5] px-4 py-2 text-sm font-medium text-[#404040] transition-colors hover:bg-[#f5f5f5] hover:text-[#171717]"
-          >
-            Rediger nettside
-          </Link>
-          {activeItem === "ekstra-info" && openCategory && (
-            <button onClick={saveCategory} disabled={saving} className="rounded-full bg-[#dc2626] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-50">
-              {saving ? "Lagrer..." : "Lagre"}
-            </button>
-          )}
-          {activeItem === "innstillinger" && siteSettings && (
-            <button onClick={saveSiteSettings} disabled={settingsSaving} className="rounded-full bg-[#dc2626] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-50">
-              {settingsSaving ? "Lagrer..." : "Lagre"}
-            </button>
-          )}
-          <button onClick={() => supabase.auth.signOut()} className="rounded-full border border-[#e5e5e5] px-4 py-2 text-sm text-[#737373] transition-colors hover:bg-[#f5f5f5]">
-            Logg ut
-          </button>
-        </div>
-      </div>
+  const activeItemDef = SIDEBAR_ITEMS.find((i) => i.key === activeItem)!;
+  const initial = (user.email ?? "?").charAt(0).toUpperCase();
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-[220px] shrink-0 border-r border-[#e5e5e5] bg-[#fafafa] p-3 space-y-1">
-          {SIDEBAR_ITEMS.map((item) => {
-            const isActive = item.key === activeItem;
-            return (
-              <button
-                key={item.key}
-                onClick={() => setActiveItem(item.key)}
-                className={`flex h-10 w-full cursor-pointer items-center rounded-lg px-3 text-[14px] transition-all ${
-                  isActive ? "bg-[#dc2626] font-medium text-white shadow-sm" : "text-[#404040] hover:bg-white hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
-                }`}
-              >
-                {item.label}
-              </button>
-            );
-          })}
+  return (
+    <div className="fixed inset-0 z-[100] flex bg-[#fafaf9]">
+      {/* Sidebar — speil av AdminSidebar.tsx */}
+      <aside className="relative flex w-[260px] shrink-0 flex-col border-r border-[#ececec] bg-gradient-to-b from-white to-[#fafaf9]">
+        <div className="border-b border-[#ececec] px-4 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#dc2626] to-[#7f1d1d] text-[15px] font-bold tracking-tight text-white shadow-[0_2px_8px_-2px_rgba(220,38,38,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]">
+              R
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[14px] font-semibold tracking-tight text-[#171717]">Reol-Consult</p>
+              <span className="mt-0.5 block truncate text-[11px] text-[#737373]">reolconsult.no</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-3 pt-4">
+          <Link
+            href="/admin/nettside"
+            className="group flex h-11 items-center gap-2.5 rounded-xl bg-gradient-to-br from-[#dc2626] to-[#b91c1c] px-3.5 text-[13px] font-semibold text-white shadow-[0_2px_8px_-2px_rgba(220,38,38,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] ring-1 ring-inset ring-white/10 transition duration-150 hover:from-[#ef4444] hover:to-[#dc2626] hover:shadow-[0_6px_16px_-2px_rgba(220,38,38,0.45),inset_0_1px_0_rgba(255,255,255,0.18)]"
+          >
+            <LayoutTemplate className="h-[17px] w-[17px] shrink-0" strokeWidth={1.75} />
+            <span className="flex-1">Rediger nettside</span>
+            <ArrowRight
+              className="h-3.5 w-3.5 shrink-0 text-white/70 transition duration-150 group-hover:translate-x-0.5 group-hover:text-white"
+              strokeWidth={2}
+            />
+          </Link>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 pt-5 pb-3">
+          <p className="mb-2 px-2.5 text-[10.5px] font-medium uppercase tracking-[0.1em] text-[#a3a3a3]">
+            Arbeidsområde
+          </p>
+          <div className="space-y-0.5">
+            {SIDEBAR_ITEMS.map((item) => {
+              const isActive = item.key === activeItem;
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => setActiveItem(item.key)}
+                  className={`group relative flex h-10 w-full items-center gap-3 rounded-lg px-3 text-[13.5px] transition duration-150 ease-out ${
+                    isActive
+                      ? "bg-white font-semibold text-[#171717] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_0_0_1px_rgba(0,0,0,0.04)]"
+                      : "text-[#525252] hover:bg-white/60 hover:text-[#171717]"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 h-5 w-[2.5px] -translate-y-1/2 rounded-r-full bg-[#dc2626]" />
+                  )}
+                  <Icon
+                    className={`h-[17px] w-[17px] shrink-0 transition-colors duration-150 ${
+                      isActive ? "text-[#dc2626]" : "text-[#a3a3a3] group-hover:text-[#525252]"
+                    }`}
+                    strokeWidth={1.75}
+                  />
+                  <span className="flex-1 text-left">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+
+        <div className="border-t border-[#ececec] bg-white p-3">
+          <div className="group flex items-center gap-3 rounded-xl px-2.5 py-2 transition-colors duration-150 hover:bg-[#fafaf9]">
+            <div className="relative">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#262626] to-[#0a0a0a] text-[12.5px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.08)]">
+                {initial}
+              </div>
+              <span className="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[12.5px] font-semibold leading-tight text-[#171717]">
+                {user.email ?? "Innlogget"}
+              </p>
+              <p className="mt-0.5 text-[11px] leading-tight text-[#a3a3a3]">Administrator</p>
+            </div>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              title="Logg ut"
+              aria-label="Logg ut"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-[#a3a3a3] transition duration-150 hover:bg-white hover:text-[#dc2626] hover:shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+            >
+              <LogOut className="h-3.5 w-3.5" strokeWidth={1.75} />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <main className="flex flex-1 flex-col overflow-hidden">
+        {/* Page header — speil av PageHeader.tsx */}
+        <div className="sticky top-0 z-10 shrink-0 border-b border-[#ececec] bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+          <div className="flex h-[76px] items-center justify-between gap-4 px-8">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1 text-[11px] text-[#a3a3a3]">
+                <Link
+                  href="/admin/nettside"
+                  className="font-medium text-[#737373] transition-colors duration-150 hover:text-[#171717]"
+                >
+                  Reolconsult AS
+                </Link>
+                <ChevronRight className="h-3 w-3" strokeWidth={2} />
+                <span className="font-medium text-[#171717]">{activeItemDef.label}</span>
+              </div>
+              <div className="mt-1 flex items-baseline gap-2.5">
+                <h1 className="text-[18px] font-semibold tracking-tight text-[#171717]">
+                  {activeItemDef.label}
+                </h1>
+                <span className="truncate text-[12.5px] text-[#737373]">
+                  {ITEM_SUBTITLES[activeItem]}
+                </span>
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {(saved || settingsSaved) && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Lagret
+                </span>
+              )}
+              {activeItem === "ekstra-info" && openCategory && (
+                <button
+                  onClick={saveCategory}
+                  disabled={saving}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#171717] px-5 py-2 text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] transition duration-150 hover:bg-[#000] hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] disabled:cursor-not-allowed disabled:bg-[#e5e5e4] disabled:text-[#a3a3a3] disabled:shadow-none"
+                >
+                  {saving ? "Lagrer..." : "Lagre"}
+                </button>
+              )}
+              {activeItem === "innstillinger" && siteSettings && (
+                <button
+                  onClick={saveSiteSettings}
+                  disabled={settingsSaving}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#171717] px-5 py-2 text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] transition duration-150 hover:bg-[#000] hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] disabled:cursor-not-allowed disabled:bg-[#e5e5e4] disabled:text-[#a3a3a3] disabled:shadow-none"
+                >
+                  {settingsSaving ? "Lagrer..." : "Lagre"}
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="h-[1px] bg-gradient-to-r from-transparent via-[#dc2626]/15 to-transparent" />
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
-
-          {/* Migration notice */}
-          {needsMigration && (
-            <div className="border-b border-blue-200 bg-blue-50 px-6 py-3">
-              <div className="flex items-start gap-3">
-                <span className="mt-0.5 text-blue-500">&#9432;</span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-blue-800">Gammel databasestruktur</p>
-                  <p className="mt-0.5 text-xs text-blue-700">
-                    Chatboten fungerer, men bruker enkel tekstformat. For å aktivere redigering av kategorier, kjør migrasjon-SQL i{" "}
-                    <a href="https://supabase.com/dashboard/project/pwkdqyczahdlsragcoep/sql/new" target="_blank" rel="noopener noreferrer" className="underline font-medium hover:text-blue-900">
-                      Supabase SQL Editor
-                    </a>.
-                  </p>
-                  <details className="mt-2">
-                    <summary className="cursor-pointer text-xs font-medium text-amber-700 hover:text-amber-900">Vis SQL</summary>
-                    <div className="mt-2 relative">
-                      <pre className="max-h-[200px] overflow-auto rounded-lg bg-amber-100/50 p-3 text-[11px] text-amber-900 font-mono leading-relaxed">{`-- Kjør dette i Supabase SQL Editor
-DROP TABLE IF EXISTS chatbot_knowledge CASCADE;
-DROP TABLE IF EXISTS chatbot_documents CASCADE;
-
-CREATE TABLE chatbot_knowledge (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  category text NOT NULL,
-  category_type text NOT NULL CHECK (category_type IN ('produkt', 'tjeneste', 'salg', 'bedriftsinfo')),
-  description text DEFAULT '',
-  variants jsonb DEFAULT '[]'::jsonb,
-  discounts jsonb DEFAULT '[]'::jsonb,
-  extra_info text DEFAULT '',
-  updated_at timestamptz DEFAULT now()
-);
-
-ALTER TABLE chatbot_knowledge ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read" ON chatbot_knowledge FOR SELECT USING (true);
-CREATE POLICY "Allow auth insert" ON chatbot_knowledge FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Allow auth update" ON chatbot_knowledge FOR UPDATE USING (auth.role() = 'authenticated');
-CREATE POLICY "Allow auth delete" ON chatbot_knowledge FOR DELETE USING (auth.role() = 'authenticated');
-
-CREATE TABLE chatbot_documents (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  filename text NOT NULL,
-  file_type text NOT NULL DEFAULT 'txt',
-  category text NOT NULL DEFAULT 'produkt',
-  content text DEFAULT '',
-  uploaded_at timestamptz DEFAULT now(),
-  uploaded_by text DEFAULT ''
-);
-
-ALTER TABLE chatbot_documents ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read docs" ON chatbot_documents FOR SELECT USING (true);
-CREATE POLICY "Allow auth insert docs" ON chatbot_documents FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Allow auth update docs" ON chatbot_documents FOR UPDATE USING (auth.role() = 'authenticated');
-CREATE POLICY "Allow auth delete docs" ON chatbot_documents FOR DELETE USING (auth.role() = 'authenticated');`}</pre>
-                      <button
-                        onClick={(e) => {
-                          const pre = (e.target as HTMLElement).closest(".relative")?.querySelector("pre");
-                          if (pre) navigator.clipboard.writeText(pre.textContent || "");
-                        }}
-                        className="absolute top-2 right-2 rounded bg-amber-200 px-2 py-1 text-[10px] font-medium text-amber-800 hover:bg-amber-300"
-                      >
-                        Kopier
-                      </button>
-                    </div>
-                    <p className="mt-2 text-[11px] text-amber-600">Etter å ha kjørt SQL, last siden på nytt.</p>
-                  </details>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─── DOKUMENTER (compact) ─── */}
+        <div className="flex-1 overflow-y-auto bg-[#fafaf9]">
+          {/* ─── DOKUMENTER ─── */}
           {activeItem === "dokumenter" && (
-            <div className="p-6 lg:p-8">
-              <div className="mx-auto max-w-3xl">
-                <h2 className="text-2xl font-bold text-[#171717]">Dokumenter</h2>
-                <p className="mt-1 text-sm text-[#a3a3a3]">Last opp dokumenter som chatboten bruker for å svare kunder</p>
+            <div className="p-8 lg:p-10">
+              <div className="mx-auto max-w-3xl space-y-6">
+                {DOC_SECTIONS.map((section) => {
+                  const sectionDocs = documents.filter((d) => d.category === section.key);
+                  const isDragOver = dragOverSection === section.key;
+                  const isUploading = uploading === section.key;
 
-                <div className="mt-6 space-y-5">
-                  {DOC_SECTIONS.map((section) => {
-                    const sectionDocs = documents.filter((d) => d.category === section.key);
-                    const isDragOver = dragOverSection === section.key;
-                    const isUploading = uploading === section.key;
+                  return (
+                    <div key={section.key} className="overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                      <div className="flex items-center justify-between border-b border-[#ececec] bg-[#fafaf9] px-5 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#dc2626]" />
+                          <h3 className="text-[13px] font-semibold tracking-tight text-[#171717]">
+                            {section.label}
+                          </h3>
+                          <span className="rounded-full bg-white px-2 py-0.5 text-[10.5px] font-medium text-[#737373] ring-1 ring-[#ececec]">
+                            {sectionDocs.length}
+                          </span>
+                        </div>
+                      </div>
 
-                    return (
-                      <div key={section.key}>
-                        <h3 className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-[#a3a3a3]">
-                          {section.label} <span className="font-normal">({sectionDocs.length} {sectionDocs.length === 1 ? "dokument" : "dokumenter"})</span>
-                        </h3>
-
-                        {/* Compact drop zone */}
+                      <div className="p-5">
                         <div
                           onDragOver={(e) => { e.preventDefault(); setDragOverSection(section.key); }}
                           onDragLeave={() => setDragOverSection(null)}
                           onDrop={(e) => handleDrop(e, section.key)}
-                          className={`flex h-[52px] items-center gap-3 rounded-lg border-2 border-dashed px-4 transition-colors ${
-                            isDragOver ? "border-[#3b82f6] bg-blue-50/50" : "border-[#d4d4d4] bg-[#fafafa] hover:border-[#a3a3a3]"
+                          className={`flex items-center gap-3 rounded-xl border-2 border-dashed px-4 py-3.5 transition duration-150 ${
+                            isDragOver
+                              ? "border-[#171717]/40 bg-[#171717]/[0.03]"
+                              : "border-[#d4d4d4] bg-[#fafaf9] hover:border-[#171717]/30 hover:bg-white"
                           }`}
                         >
-                          <svg className="h-4 w-4 shrink-0 text-[#a3a3a3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-                          </svg>
-                          <p className="flex-1 text-sm text-[#737373]">
-                            {isUploading ? "Laster opp..." : "Dra og slipp fil, eller"}
+                          <Upload className="h-4 w-4 shrink-0 text-[#737373]" strokeWidth={1.75} />
+                          <p className="flex-1 text-[12.5px] text-[#737373]">
+                            {isUploading ? "Laster opp..." : "Dra inn fil, eller klikk for å velge"}
                           </p>
                           <button
                             onClick={() => fileInputRefs.current[section.key]?.click()}
-                            className="shrink-0 rounded-lg border border-[#e5e5e5] bg-white px-3 py-1.5 text-xs font-medium text-[#404040] transition-colors hover:bg-[#f5f5f5]"
+                            disabled={isUploading}
+                            className="shrink-0 rounded-full border border-[#ececec] bg-white px-3.5 py-1.5 text-[12px] font-medium text-[#525252] transition duration-150 hover:border-[#d4d4d4] hover:text-[#171717] disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             Velg fil
                           </button>
@@ -791,222 +907,238 @@ CREATE POLICY "Allow auth delete docs" ON chatbot_documents FOR DELETE USING (au
                           />
                         </div>
 
-                        {/* File list */}
                         {sectionDocs.length > 0 ? (
-                          <div className="mt-1.5 space-y-1">
-                            {sectionDocs.map((doc) => (
-                              <div key={doc.id} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 border border-[#f0f0f0]">
-                                <svg className="h-4 w-4 shrink-0 text-[#a3a3a3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                                </svg>
-                                <p className="flex-1 truncate text-sm text-[#404040]">{doc.filename}</p>
+                          <div className="mt-3 overflow-hidden rounded-xl border border-[#ececec]">
+                            {sectionDocs.map((doc, i) => (
+                              <div
+                                key={doc.id}
+                                className={`group flex items-center gap-3 px-4 py-2.5 transition-colors duration-150 hover:bg-[#fafaf9] ${
+                                  i < sectionDocs.length - 1 ? "border-b border-[#f5f5f4]" : ""
+                                }`}
+                              >
+                                <FileText className="h-4 w-4 shrink-0 text-[#a3a3a3]" strokeWidth={1.75} />
+                                <p className="flex-1 truncate text-[12.5px] text-[#171717]">{doc.filename}</p>
                                 <span className="shrink-0 text-[11px] text-[#a3a3a3]">
                                   {new Date(doc.uploaded_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short" })}
                                 </span>
-                                <button onClick={() => deleteDocument(doc.id)} className="shrink-0 rounded p-1 text-[#dc2626]/30 transition-colors hover:bg-red-50 hover:text-[#dc2626]" title="Slett">
-                                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                <button
+                                  onClick={() => deleteDocument(doc.id)}
+                                  title="Slett"
+                                  aria-label="Slett"
+                                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[#a3a3a3] opacity-0 transition duration-150 hover:bg-red-50 hover:text-[#dc2626] group-hover:opacity-100"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
                                 </button>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="mt-1.5 px-1 text-[11px] text-[#c0c0c0]">Ingen dokumenter ennå</p>
+                          <p className="mt-3 px-1 text-[11.5px] text-[#a3a3a3]">Ingen dokumenter ennå</p>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* ─── EKSTRA INFO (accordion) ─── */}
           {activeItem === "ekstra-info" && (
-            <div className="p-6 lg:p-8">
-              <div className="mx-auto max-w-3xl">
-                <h2 className="text-2xl font-bold text-[#171717]">Ekstra info</h2>
-                <p className="mt-1 text-sm text-[#a3a3a3]">Rediger informasjon som chatboten bruker for å svare kunder</p>
+            <div className="p-8 lg:p-10">
+              <div className="mx-auto max-w-3xl space-y-8">
+                {CATEGORY_GROUPS.map((group) => (
+                  <div key={group.label}>
+                    <div className="mb-3 flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#dc2626]" />
+                      <h3 className="text-[13px] font-semibold tracking-tight text-[#171717]">
+                        {group.label.charAt(0) + group.label.slice(1).toLowerCase()}
+                      </h3>
+                      <span className="rounded-full bg-[#f5f5f4] px-2 py-0.5 text-[10.5px] font-medium text-[#737373]">
+                        {group.items.length}
+                      </span>
+                    </div>
+                    <div className="overflow-hidden rounded-xl border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                      {group.items.map((name, i) => {
+                        const cat = categories.find((c) => c.category === name);
+                        const isOpen = openCategory === name;
+                        const hasData = cat?.id !== null;
 
-                <div className="mt-6 space-y-6">
-                  {CATEGORY_GROUPS.map((group) => (
-                    <div key={group.label}>
-                      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#b0b0b0]">
-                        {group.label}
-                      </p>
-                      <div className="space-y-1">
-                        {group.items.map((name) => {
-                          const cat = categories.find((c) => c.category === name);
-                          const isOpen = openCategory === name;
-                          const hasData = cat?.id !== null;
+                        return (
+                          <div
+                            key={name}
+                            className={i < group.items.length - 1 ? "border-b border-[#f5f5f4]" : ""}
+                          >
+                            <button
+                              onClick={() => toggleCategory(name)}
+                              className={`flex w-full items-center justify-between px-4 py-3 text-left transition-colors duration-150 ${
+                                isOpen ? "bg-[#fafaf9]" : "hover:bg-[#fafaf9]"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <ChevronDown
+                                  className={`h-3.5 w-3.5 text-[#a3a3a3] transition-transform duration-150 ${isOpen ? "rotate-0" : "-rotate-90"}`}
+                                  strokeWidth={2}
+                                />
+                                <span className="text-[13.5px] font-medium text-[#171717]">{name}</span>
+                              </div>
+                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-medium ${
+                                hasData
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : "bg-[#f5f5f4] text-[#737373]"
+                              }`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${hasData ? "bg-emerald-500" : "bg-[#a3a3a3]"}`} />
+                                {hasData ? "Har data" : "Mangler"}
+                              </span>
+                            </button>
 
-                          return (
-                            <div key={name} className="rounded-lg border border-[#e5e5e5] bg-white overflow-hidden">
-                              {/* Accordion header */}
-                              <button
-                                onClick={() => toggleCategory(name)}
-                                className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-[#fafafa]"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <svg className={`h-3.5 w-3.5 text-[#a3a3a3] transition-transform ${isOpen ? "rotate-90" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                                  </svg>
-                                  <span className="text-[13px] font-medium text-[#171717]">{name}</span>
-                                </div>
-                                <span className={`text-[11px] font-medium ${hasData ? "text-emerald-500" : "text-[#c0c0c0]"}`}>
-                                  {hasData ? "Har data" : "Mangler data"}
-                                </span>
-                              </button>
+                            {isOpen && cat && (
+                              <div className="border-t border-[#f5f5f4] bg-[#fafaf9] px-5 py-5 space-y-4">
+                                <label className="block">
+                                  <span className="text-[12px] font-medium text-[#404040]">Beskrivelse</span>
+                                  <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    rows={cat.category_type === "bedriftsinfo" ? 6 : 2}
+                                    className="mt-1.5 w-full resize-y rounded-lg border border-[#ececec] bg-white px-3.5 py-2.5 text-[13px] leading-relaxed text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                                    placeholder="Skriv en beskrivelse..."
+                                  />
+                                </label>
 
-                              {/* Accordion content */}
-                              {isOpen && cat && (
-                                <div className="border-t border-[#f0f0f0] px-4 py-4 space-y-4">
-                                  {/* Description */}
-                                  <div>
-                                    <label className="mb-1 block text-xs font-semibold text-[#737373] uppercase tracking-wide">Beskrivelse</label>
-                                    <textarea
-                                      value={description}
-                                      onChange={(e) => setDescription(e.target.value)}
-                                      rows={cat.category_type === "bedriftsinfo" ? 6 : 2}
-                                      className="w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2 text-sm leading-relaxed text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
-                                      placeholder="Skriv en beskrivelse..."
-                                    />
-                                  </div>
-
-                                  {/* Variants */}
-                                  {(cat.category_type === "produkt" || cat.category_type === "salg") && (
-                                    <>
-                                      {variants.length > 0 && (
-                                        <div>
-                                          <label className="mb-1 block text-xs font-semibold text-[#737373] uppercase tracking-wide">Varianter</label>
-                                          <div className="overflow-x-auto rounded-lg border border-[#e5e5e5] bg-white">
-                                            <table className="w-full">
-                                              <thead>
-                                                <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
-                                                  <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Variant</th>
-                                                  <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Pris</th>
-                                                  <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Lager</th>
-                                                  <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Levering</th>
-                                                  <th className="w-8 px-1 py-1.5" />
+                                {(cat.category_type === "produkt" || cat.category_type === "salg") && (
+                                  <>
+                                    {variants.length > 0 && (
+                                      <div>
+                                        <span className="text-[12px] font-medium text-[#404040]">Varianter</span>
+                                        <div className="mt-1.5 overflow-x-auto rounded-lg border border-[#ececec] bg-white">
+                                          <table className="w-full">
+                                            <thead>
+                                              <tr className="border-b border-[#ececec] bg-[#fafaf9]">
+                                                <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Variant</th>
+                                                <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Pris</th>
+                                                <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Lager</th>
+                                                <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Levering</th>
+                                                <th className="w-8 px-1 py-1.5" />
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {variants.map((v, i) => (
+                                                <tr key={i} className="border-t border-[#f5f5f4]">
+                                                  <td className="px-2 py-1"><input value={v.name} onChange={(e) => updateVariant(i, "name", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#ececec] focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10" placeholder="Navn" /></td>
+                                                  <td className="px-2 py-1"><input value={v.price} onChange={(e) => updateVariant(i, "price", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#ececec] focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10" placeholder="—" /></td>
+                                                  <td className="px-2 py-1"><input value={v.stock} onChange={(e) => updateVariant(i, "stock", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#ececec] focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10" placeholder="—" /></td>
+                                                  <td className="px-2 py-1"><input value={v.delivery} onChange={(e) => updateVariant(i, "delivery", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#ececec] focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10" placeholder="—" /></td>
+                                                  <td className="px-1 py-1 text-center">
+                                                    <button onClick={() => removeVariant(i)} title="Fjern" aria-label="Fjern" className="flex h-7 w-7 items-center justify-center rounded-md text-[#a3a3a3] transition-colors duration-150 hover:bg-red-50 hover:text-[#dc2626]"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></button>
+                                                  </td>
                                                 </tr>
-                                              </thead>
-                                              <tbody>
-                                                {variants.map((v, i) => (
-                                                  <tr key={i} className="border-t border-[#f0f0f0]">
-                                                    <td className="px-2 py-1"><input value={v.name} onChange={(e) => updateVariant(i, "name", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#e5e5e5] focus:border-[#dc2626] focus:bg-white focus:outline-none" placeholder="Navn" /></td>
-                                                    <td className="px-2 py-1"><input value={v.price} onChange={(e) => updateVariant(i, "price", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#e5e5e5] focus:border-[#dc2626] focus:bg-white focus:outline-none" placeholder="—" /></td>
-                                                    <td className="px-2 py-1"><input value={v.stock} onChange={(e) => updateVariant(i, "stock", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#e5e5e5] focus:border-[#dc2626] focus:bg-white focus:outline-none" placeholder="—" /></td>
-                                                    <td className="px-2 py-1"><input value={v.delivery} onChange={(e) => updateVariant(i, "delivery", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#e5e5e5] focus:border-[#dc2626] focus:bg-white focus:outline-none" placeholder="—" /></td>
-                                                    <td className="px-1 py-1 text-center">
-                                                      <button onClick={() => removeVariant(i)} className="rounded p-1 text-[#dc2626]/30 transition-colors hover:bg-red-50 hover:text-[#dc2626]" title="Fjern"><svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                                                    </td>
-                                                  </tr>
-                                                ))}
-                                              </tbody>
-                                            </table>
-                                          </div>
+                                              ))}
+                                            </tbody>
+                                          </table>
                                         </div>
-                                      )}
-                                      <button onClick={addVariant} className="rounded-lg border border-dashed border-[#d4d4d4] px-3 py-1.5 text-[12px] font-medium text-[#737373] transition-colors hover:border-[#dc2626] hover:text-[#dc2626]">
-                                        + Legg til variant
-                                      </button>
-
-                                      {/* Discounts */}
-                                      {discounts.length > 0 && (
-                                        <div>
-                                          <label className="mb-1 block text-xs font-semibold text-[#737373] uppercase tracking-wide">Mengderabatt</label>
-                                          <div className="overflow-x-auto rounded-lg border border-[#e5e5e5] bg-white">
-                                            <table className="w-full">
-                                              <thead>
-                                                <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
-                                                  <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Over antall</th>
-                                                  <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Pris per stk</th>
-                                                  <th className="w-8 px-1 py-1.5" />
-                                                </tr>
-                                              </thead>
-                                              <tbody>
-                                                {discounts.map((d, i) => (
-                                                  <tr key={i} className="border-t border-[#f0f0f0]">
-                                                    <td className="px-2 py-1"><input value={d.min_quantity} onChange={(e) => updateDiscount(i, "min_quantity", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#e5e5e5] focus:border-[#dc2626] focus:bg-white focus:outline-none" placeholder="0" /></td>
-                                                    <td className="px-2 py-1"><input value={d.price} onChange={(e) => updateDiscount(i, "price", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#e5e5e5] focus:border-[#dc2626] focus:bg-white focus:outline-none" placeholder="0" /></td>
-                                                    <td className="px-1 py-1 text-center">
-                                                      <button onClick={() => removeDiscount(i)} className="rounded p-1 text-[#dc2626]/30 transition-colors hover:bg-red-50 hover:text-[#dc2626]" title="Fjern"><svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                                                    </td>
-                                                  </tr>
-                                                ))}
-                                              </tbody>
-                                            </table>
-                                          </div>
-                                        </div>
-                                      )}
-                                      <button onClick={addDiscount} className="rounded-lg border border-dashed border-[#d4d4d4] px-3 py-1.5 text-[12px] font-medium text-[#737373] transition-colors hover:border-[#dc2626] hover:text-[#dc2626]">
-                                        + Legg til rabatt
-                                      </button>
-                                    </>
-                                  )}
-
-                                  {/* Extra info */}
-                                  {cat.category_type !== "bedriftsinfo" && (
-                                    <div>
-                                      <label className="mb-1 block text-xs font-semibold text-[#737373] uppercase tracking-wide">
-                                        {cat.category_type === "tjeneste" ? "Priser/Info" : "Ekstra info"}
-                                      </label>
-                                      <textarea
-                                        value={extraInfo}
-                                        onChange={(e) => setExtraInfo(e.target.value)}
-                                        rows={2}
-                                        className="w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2 text-sm leading-relaxed text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
-                                        placeholder={cat.category_type === "tjeneste" ? "F.eks. priser, betingelser..." : "Tilleggsinformasjon..."}
-                                      />
-                                    </div>
-                                  )}
-
-                                  {cat.updated_at && (
-                                    <p className="text-[11px] text-[#a3a3a3]">
-                                      Sist oppdatert: {new Date(cat.updated_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}{" "}
-                                      kl. {new Date(cat.updated_at).toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" })}
-                                    </p>
-                                  )}
-
-                                  <div className="flex justify-end pt-1">
-                                    <button onClick={saveCategory} disabled={saving} className="rounded-full bg-[#dc2626] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-50">
-                                      {saving ? "Lagrer..." : "Lagre"}
+                                      </div>
+                                    )}
+                                    <button onClick={addVariant} className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-[#d4d4d4] bg-white px-3.5 py-1.5 text-[12px] font-medium text-[#737373] transition duration-150 hover:border-[#171717] hover:text-[#171717]">
+                                      <Plus className="h-3.5 w-3.5" strokeWidth={2} /> Legg til variant
                                     </button>
-                                  </div>
+
+                                    {discounts.length > 0 && (
+                                      <div>
+                                        <span className="text-[12px] font-medium text-[#404040]">Mengderabatt</span>
+                                        <div className="mt-1.5 overflow-x-auto rounded-lg border border-[#ececec] bg-white">
+                                          <table className="w-full">
+                                            <thead>
+                                              <tr className="border-b border-[#ececec] bg-[#fafaf9]">
+                                                <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Over antall</th>
+                                                <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[#a3a3a3]">Pris per stk</th>
+                                                <th className="w-8 px-1 py-1.5" />
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {discounts.map((d, i) => (
+                                                <tr key={i} className="border-t border-[#f5f5f4]">
+                                                  <td className="px-2 py-1"><input value={d.min_quantity} onChange={(e) => updateDiscount(i, "min_quantity", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#ececec] focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10" placeholder="0" /></td>
+                                                  <td className="px-2 py-1"><input value={d.price} onChange={(e) => updateDiscount(i, "price", e.target.value)} className="w-full rounded border border-transparent bg-transparent px-1.5 py-1 text-[13px] text-[#171717] hover:border-[#ececec] focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10" placeholder="0" /></td>
+                                                  <td className="px-1 py-1 text-center">
+                                                    <button onClick={() => removeDiscount(i)} title="Fjern" aria-label="Fjern" className="flex h-7 w-7 items-center justify-center rounded-md text-[#a3a3a3] transition-colors duration-150 hover:bg-red-50 hover:text-[#dc2626]"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></button>
+                                                  </td>
+                                                </tr>
+                                              ))}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </div>
+                                    )}
+                                    <button onClick={addDiscount} className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-[#d4d4d4] bg-white px-3.5 py-1.5 text-[12px] font-medium text-[#737373] transition duration-150 hover:border-[#171717] hover:text-[#171717]">
+                                      <Plus className="h-3.5 w-3.5" strokeWidth={2} /> Legg til rabatt
+                                    </button>
+                                  </>
+                                )}
+
+                                {cat.category_type !== "bedriftsinfo" && (
+                                  <label className="block">
+                                    <span className="text-[12px] font-medium text-[#404040]">
+                                      {cat.category_type === "tjeneste" ? "Priser / info" : "Ekstra info"}
+                                    </span>
+                                    <textarea
+                                      value={extraInfo}
+                                      onChange={(e) => setExtraInfo(e.target.value)}
+                                      rows={2}
+                                      className="mt-1.5 w-full resize-y rounded-lg border border-[#ececec] bg-white px-3.5 py-2.5 text-[13px] leading-relaxed text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                                      placeholder={cat.category_type === "tjeneste" ? "F.eks. priser, betingelser..." : "Tilleggsinformasjon..."}
+                                    />
+                                  </label>
+                                )}
+
+                                {cat.updated_at && (
+                                  <p className="text-[11px] text-[#a3a3a3]">
+                                    Sist oppdatert: {new Date(cat.updated_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}{" "}
+                                    kl. {new Date(cat.updated_at).toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" })}
+                                  </p>
+                                )}
+
+                                <div className="flex justify-end pt-1">
+                                  <button
+                                    onClick={saveCategory}
+                                    disabled={saving}
+                                    className="inline-flex items-center gap-1.5 rounded-full bg-[#171717] px-5 py-2 text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] transition duration-150 hover:bg-[#000] hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] disabled:cursor-not-allowed disabled:bg-[#e5e5e4] disabled:text-[#a3a3a3] disabled:shadow-none"
+                                  >
+                                    {saving ? "Lagrer..." : "Lagre"}
+                                  </button>
                                 </div>
-                              )}
+                              </div>
+                            )}
                             </div>
                           );
                         })}
                       </div>
                     </div>
                   ))}
-                </div>
               </div>
             </div>
           )}
 
           {/* ─── STATISTIKK ─── */}
           {activeItem === "statistikk" && (
-            <div className="p-8 lg:p-12">
-              <div className="mx-auto max-w-3xl">
-                <h2 className="text-2xl font-bold text-[#171717]">Statistikk</h2>
-                <p className="mt-1 text-sm text-[#a3a3a3]">Oversikt over kunnskapsbasen</p>
-                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                    <p className="text-3xl font-bold text-[#171717]">{documents.length}</p>
-                    <p className="mt-1 text-sm text-[#737373]">Dokumenter lastet opp</p>
-                  </div>
-                  <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                    <p className="text-3xl font-bold text-[#171717]">{needsMigration ? "1" : filledCategories}</p>
-                    <p className="mt-1 text-sm text-[#737373]">Kategorier i database{needsMigration ? " (tekstformat)" : ""}</p>
-                  </div>
-                  <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                    <p className="text-3xl font-bold text-[#171717]">24</p>
-                    <p className="mt-1 text-sm text-[#737373]">Totalt kategorier</p>
-                  </div>
+            <div className="p-8 lg:p-10">
+              <div className="mx-auto max-w-3xl space-y-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  {[
+                    { value: documents.length, label: "Dokumenter lastet opp", icon: FileText },
+                    { value: needsMigration ? 1 : filledCategories, label: "Kategorier i database", icon: Database },
+                    { value: 24, label: "Totalt kategorier", icon: BarChart3 },
+                  ].map(({ value, label, icon: Icon }) => (
+                    <div key={label} className="rounded-2xl border border-[#ececec] bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#fef2f2] text-[#dc2626] ring-1 ring-rose-100">
+                        <Icon className="h-4 w-4" strokeWidth={1.75} />
+                      </div>
+                      <p className="mt-4 text-[28px] font-semibold tracking-tight text-[#171717]">{value}</p>
+                      <p className="mt-0.5 text-[12.5px] text-[#737373]">{label}</p>
+                    </div>
+                  ))}
                 </div>
                 {latestUpdate?.updated_at && (
-                  <p className="mt-6 text-sm text-[#a3a3a3]">
+                  <p className="text-[12px] text-[#a3a3a3]">
                     Siste oppdatering: {new Date(latestUpdate.updated_at).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" })}{" "}
                     kl. {new Date(latestUpdate.updated_at).toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" })}
                   </p>
@@ -1017,21 +1149,29 @@ CREATE POLICY "Allow auth delete docs" ON chatbot_documents FOR DELETE USING (au
 
           {/* ─── CHATBOT ─── */}
           {activeItem === "chatbot" && (
-            <div className="p-8 lg:p-12">
+            <div className="p-8 lg:p-10">
               <div className="mx-auto max-w-2xl">
-                <h2 className="text-2xl font-bold text-[#171717]">Test chatbot</h2>
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  Test at chatboten finner riktig informasjon.
-                  Søker i {categories.length} kategorier og {docContents.length} dokumenter.
+                <p className="text-[12.5px] text-[#737373]">
+                  Søker i <span className="font-medium text-[#171717]">{categories.length}</span> kategorier og{" "}
+                  <span className="font-medium text-[#171717]">{docContents.length}</span> dokumenter.
                 </p>
-                <div className="mt-8 flex h-[600px] flex-col rounded-2xl border border-[#e5e5e5] bg-white">
+                <div className="mt-4 flex h-[600px] flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {testMessages.length === 0 && (
                       <div className="pt-6 text-center">
-                        <p className="text-sm text-[#a3a3a3]">Skriv en melding for å teste chatboten</p>
-                        <div className="mt-4 flex flex-wrap justify-center gap-2">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fafaf9] to-[#f5f5f4] text-[#525252] ring-1 ring-inset ring-[#ececec]">
+                          <Bot className="h-5 w-5" strokeWidth={1.75} />
+                        </div>
+                        <p className="mt-4 text-[13px] text-[#737373]">Skriv en melding for å teste AI-assistenten</p>
+                        <div className="mt-4 flex flex-wrap justify-center gap-1.5">
                           {["Pallreoler", "Kontaktinfo", "Levering", "Bruktsalg", "Garderobeskap", "Åpningstider"].map((q) => (
-                            <button key={q} onClick={() => handleQuickReply(q)} className="rounded-full border border-[#e5e5e5] px-3 py-1.5 text-xs font-medium text-[#737373] transition-colors hover:border-[#dc2626] hover:text-[#dc2626]">{q}</button>
+                            <button
+                              key={q}
+                              onClick={() => handleQuickReply(q)}
+                              className="rounded-full border border-[#ececec] bg-white px-3 py-1.5 text-[12px] font-medium text-[#525252] transition duration-150 hover:border-[#d4d4d4] hover:text-[#171717]"
+                            >
+                              {q}
+                            </button>
                           ))}
                         </div>
                       </div>
@@ -1039,7 +1179,11 @@ CREATE POLICY "Allow auth delete docs" ON chatbot_documents FOR DELETE USING (au
                     {testMessages.map((msg, i) => (
                       <div key={i}>
                         <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line ${msg.role === "user" ? "rounded-br-md bg-[#dc2626] text-white" : "rounded-bl-md bg-[#f5f5f5] text-[#171717]"}`}>
+                          <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[13.5px] leading-relaxed whitespace-pre-line ${
+                            msg.role === "user"
+                              ? "rounded-br-md bg-[#171717] text-white"
+                              : "rounded-bl-md bg-[#fafaf9] text-[#171717] ring-1 ring-[#ececec]"
+                          }`}>
                             {msg.text.split(/(\*\*[^*]+\*\*)/).map((part, j) =>
                               part.startsWith("**") && part.endsWith("**") ? <strong key={j}>{part.slice(2, -2)}</strong> : <span key={j}>{part}</span>
                             )}
@@ -1048,7 +1192,13 @@ CREATE POLICY "Allow auth delete docs" ON chatbot_documents FOR DELETE USING (au
                         {msg.role === "bot" && msg.followUps && msg.followUps.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1.5 pl-1">
                             {msg.followUps.map((q) => (
-                              <button key={q} onClick={() => handleQuickReply(q)} className="rounded-full border border-[#e5e5e5] px-3 py-1.5 text-xs font-medium text-[#737373] transition-colors hover:border-[#dc2626] hover:text-[#dc2626]">{q}</button>
+                              <button
+                                key={q}
+                                onClick={() => handleQuickReply(q)}
+                                className="rounded-full border border-[#ececec] bg-white px-3 py-1.5 text-[11.5px] font-medium text-[#525252] transition duration-150 hover:border-[#d4d4d4] hover:text-[#171717]"
+                              >
+                                {q}
+                              </button>
                             ))}
                           </div>
                         )}
@@ -1056,10 +1206,20 @@ CREATE POLICY "Allow auth delete docs" ON chatbot_documents FOR DELETE USING (au
                     ))}
                     <div ref={chatEndRef} />
                   </div>
-                  <form onSubmit={sendTestMessage} className="border-t border-[#e5e5e5] p-4">
+                  <form onSubmit={sendTestMessage} className="border-t border-[#ececec] bg-[#fafaf9] p-3">
                     <div className="flex gap-2">
-                      <input value={testMessage} onChange={(e) => setTestMessage(e.target.value)} placeholder="Skriv et spørsmål, f.eks. «pallreoler» eller «levering»..." className="flex-1 rounded-xl border border-[#e5e5e5] bg-[#fafafa] px-4 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20" />
-                      <button type="submit" className="rounded-xl bg-[#dc2626] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#b91c1c]">Send</button>
+                      <input
+                        value={testMessage}
+                        onChange={(e) => setTestMessage(e.target.value)}
+                        placeholder="Skriv et spørsmål, f.eks. «pallreoler» eller «levering»..."
+                        className="flex-1 rounded-full border border-[#ececec] bg-white px-4 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                      />
+                      <button
+                        type="submit"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#171717] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] transition duration-150 hover:bg-[#000] hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
+                      >
+                        Send
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -1069,116 +1229,81 @@ CREATE POLICY "Allow auth delete docs" ON chatbot_documents FOR DELETE USING (au
 
           {/* ─── INNSTILLINGER ─── */}
           {activeItem === "innstillinger" && (
-            <div className="p-8 lg:p-12">
-              <div className="mx-auto max-w-2xl space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-[#171717]">Innstillinger</h2>
-                  <p className="mt-1 text-sm text-[#a3a3a3]">
-                    Endringer her vises umiddelbart på nettsiden.
-                  </p>
-                </div>
-
+            <div className="p-8 lg:p-10">
+              <div className="mx-auto max-w-2xl space-y-5">
                 {settingsLoading || !siteSettings ? (
-                  <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                    <p className="text-sm text-[#a3a3a3]">Laster innstillinger…</p>
+                  <div className="rounded-2xl border border-[#ececec] bg-white p-6">
+                    <p className="text-[13px] text-[#a3a3a3]">Laster innstillinger…</p>
                   </div>
                 ) : (
                   <>
-                    {/* Kontakt */}
-                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                      <h3 className="text-sm font-semibold text-[#171717]">Kontakt</h3>
-                      <div className="mt-4 space-y-4">
-                        <label className="block">
-                          <span className="text-xs font-medium text-[#737373]">Telefon</span>
-                          <input
-                            type="text"
-                            value={siteSettings.phone ?? ""}
-                            onChange={(e) => updateSettingField("phone", e.target.value)}
-                            placeholder="33 36 55 80"
-                            className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
-                          />
-                          <span className="mt-1 block text-[11px] text-[#a3a3a3]">
-                            Skriv uten landskode. tel:-lenker bygges automatisk med +47.
-                          </span>
-                        </label>
-                        <label className="block">
-                          <span className="text-xs font-medium text-[#737373]">E-post (generell)</span>
-                          <input
-                            type="email"
-                            value={siteSettings.email_general ?? ""}
-                            onChange={(e) => updateSettingField("email_general", e.target.value)}
-                            placeholder="mail@reolconsult.no"
-                            className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Adresse */}
-                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                      <h3 className="text-sm font-semibold text-[#171717]">Adresse</h3>
-                      <div className="mt-4 space-y-4">
-                        <label className="block">
-                          <span className="text-xs font-medium text-[#737373]">Besøksadresse</span>
-                          <input
-                            type="text"
-                            value={siteSettings.visit_address ?? ""}
-                            onChange={(e) => updateSettingField("visit_address", e.target.value)}
-                            placeholder="Smiløkka 7, 3173 Vear"
-                            className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
-                          />
-                        </label>
-                        <label className="block">
-                          <span className="text-xs font-medium text-[#737373]">Postadresse</span>
-                          <input
-                            type="text"
-                            value={siteSettings.postal_address ?? ""}
-                            onChange={(e) => updateSettingField("postal_address", e.target.value)}
-                            placeholder="Postboks 1, 3108 Vear"
-                            className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Åpningstider */}
-                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                      <h3 className="text-sm font-semibold text-[#171717]">Åpningstider</h3>
-                      <p className="mt-1 text-xs text-[#a3a3a3]">Én linje per rad. Vises ordrett på siden.</p>
-                      <textarea
-                        value={siteSettings.opening_hours ?? ""}
-                        onChange={(e) => updateSettingField("opening_hours", e.target.value)}
-                        placeholder={"Mandag–fredag: 08:00–16:00\nLørdag/søndag: Stengt"}
-                        rows={4}
-                        className="mt-3 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
+                    <SettingsCard title="Kontakt">
+                      <SettingsField
+                        label="Telefon"
+                        value={siteSettings.phone ?? ""}
+                        onChange={(v) => updateSettingField("phone", v)}
+                        placeholder="33 36 55 80"
+                        hint="Skriv uten landskode. tel:-lenker bygges automatisk med +47."
                       />
-                    </div>
+                      <SettingsField
+                        label="E-post (generell)"
+                        type="email"
+                        value={siteSettings.email_general ?? ""}
+                        onChange={(v) => updateSettingField("email_general", v)}
+                        placeholder="mail@reolconsult.no"
+                      />
+                    </SettingsCard>
 
-                    {/* Sosiale medier */}
-                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                      <h3 className="text-sm font-semibold text-[#171717]">Sosiale medier</h3>
-                      <p className="mt-1 text-xs text-[#a3a3a3]">La feltet stå tomt hvis dere ikke har konto.</p>
-                      <div className="mt-4 space-y-4">
-                        {(["facebook", "instagram", "linkedin"] as const).map((key) => (
-                          <label key={key} className="block">
-                            <span className="text-xs font-medium text-[#737373] capitalize">{key}</span>
-                            <input
-                              type="url"
-                              value={siteSettings.social?.[key] ?? ""}
-                              onChange={(e) => updateSocial(key, e.target.value)}
-                              placeholder={`https://${key}.com/…`}
-                              className="mt-1 w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2.5 text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:border-[#dc2626] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dc2626]/20"
-                            />
-                          </label>
-                        ))}
+                    <SettingsCard title="Adresse">
+                      <SettingsField
+                        label="Besøksadresse"
+                        value={siteSettings.visit_address ?? ""}
+                        onChange={(v) => updateSettingField("visit_address", v)}
+                        placeholder="Smiløkka 7, 3173 Vear"
+                      />
+                      <SettingsField
+                        label="Postadresse"
+                        value={siteSettings.postal_address ?? ""}
+                        onChange={(v) => updateSettingField("postal_address", v)}
+                        placeholder="Postboks 1, 3108 Vear"
+                      />
+                    </SettingsCard>
+
+                    <SettingsCard title="Åpningstider" description="Én linje per rad. Vises ordrett på siden.">
+                      <label className="block">
+                        <textarea
+                          value={siteSettings.opening_hours ?? ""}
+                          onChange={(e) => updateSettingField("opening_hours", e.target.value)}
+                          placeholder={"Mandag–fredag: 08:00–16:00\nLørdag/søndag: Stengt"}
+                          rows={4}
+                          className="w-full resize-y rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                        />
+                      </label>
+                    </SettingsCard>
+
+                    <SettingsCard title="Sosiale medier" description="La feltet stå tomt hvis dere ikke har konto.">
+                      {(["facebook", "instagram", "linkedin"] as const).map((key) => (
+                        <SettingsField
+                          key={key}
+                          label={key.charAt(0).toUpperCase() + key.slice(1)}
+                          type="url"
+                          value={siteSettings.social?.[key] ?? ""}
+                          onChange={(v) => updateSocial(key, v)}
+                          placeholder={`https://${key}.com/…`}
+                        />
+                      ))}
+                    </SettingsCard>
+
+                    <div className="overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                      <div className="border-b border-[#ececec] bg-[#fafaf9] px-6 py-3">
+                        <h3 className="text-[13px] font-semibold tracking-tight text-[#171717]">Konto</h3>
                       </div>
-                    </div>
-
-                    {/* Konto */}
-                    <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                      <h3 className="text-sm font-semibold text-[#171717]">Konto</h3>
-                      <p className="mt-2 text-sm text-[#737373]">Innlogget som <span className="font-medium text-[#404040]">{user.email}</span></p>
-                      <p className="mt-1 text-xs text-[#a3a3a3]">Rolle: {siteRole}</p>
+                      <div className="p-6">
+                        <p className="text-[13px] text-[#737373]">
+                          Innlogget som <span className="font-medium text-[#171717]">{user.email}</span>
+                        </p>
+                        <p className="mt-1 text-[11.5px] text-[#a3a3a3]">Rolle: {siteRole}</p>
+                      </div>
                     </div>
                   </>
                 )}
@@ -1186,7 +1311,57 @@ CREATE POLICY "Allow auth delete docs" ON chatbot_documents FOR DELETE USING (au
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
+  );
+}
+
+function SettingsCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="border-b border-[#ececec] bg-[#fafaf9] px-6 py-3">
+        <h3 className="text-[13px] font-semibold tracking-tight text-[#171717]">{title}</h3>
+        {description && <p className="mt-0.5 text-[11.5px] text-[#737373]">{description}</p>}
+      </div>
+      <div className="space-y-4 p-6">{children}</div>
+    </section>
+  );
+}
+
+function SettingsField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  hint,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  hint?: string;
+  type?: "text" | "email" | "url" | "tel";
+}) {
+  return (
+    <label className="block">
+      <span className="text-[12px] font-medium text-[#404040]">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-1.5 w-full rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+      />
+      {hint && <span className="mt-1.5 block text-[11px] text-[#a3a3a3]">{hint}</span>}
+    </label>
   );
 }
