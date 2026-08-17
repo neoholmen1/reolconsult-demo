@@ -1526,7 +1526,7 @@ export default function Chatbot() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.25, 0.4, 0.25, 1] }}
             onClick={() => setOpen(true)}
-            className="fixed right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_30px_rgba(220,38,38,0.3)] transition duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(220,38,38,0.45)] sm:right-6 sm:bottom-6"
+            className="fixed bottom-1.5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_30px_rgba(220,38,38,0.3)] transition duration-300 hover:bg-accent-hover hover:shadow-[0_8px_30px_rgba(220,38,38,0.45)] sm:right-6 sm:bottom-6"
             style={{ bottom: "max(20px, env(safe-area-inset-bottom, 20px))" }}
             aria-label={ui.openChat}
           >

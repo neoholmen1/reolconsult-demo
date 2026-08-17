@@ -27,7 +27,7 @@ export default function CookieBanner() {
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-40 flex justify-center px-4 pb-4 transition duration-300 ${
+      className={`fixed bottom-0 left-0 right-0 z-40 flex justify-center px-4 pb-[5.5rem] transition duration-300 md:pb-4 ${
         leaving ? "opacity-0 translate-y-4" : "animate-slide-up"
       }`}
     >
