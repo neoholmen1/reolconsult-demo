@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
-import ProductModal, { type ProductModalData } from "@/components/ProductModal";
+import type { ProductModalData } from "@/components/ProductModal";
 import JsonLd from "@/components/JsonLd";
 import { useSite } from "@/components/SiteProvider";
 import { formatPhoneLink } from "@/lib/site";
@@ -13,6 +12,9 @@ import { ryddTekst } from "@/lib/tekst";
 
 export type CategoryProduct = {
   id: string;
+  /** URL-vennlig id. Fallback-produktene bruker allerede slug som `id`,
+   *  så den er valgfri og faller tilbake på `id`. */
+  slug?: string;
   title: string;
   shortDesc: string;
   image?: string;
@@ -47,7 +49,6 @@ export default function CategoryPageContent({
 }: CategoryPageContentProps) {
   const router = useRouter();
   const { settings } = useSite();
-  const [activeProduct, setActiveProduct] = useState<ProductModalData | null>(null);
 
   // Strukturdata: BreadcrumbList + ItemList av produktene på denne kategori-siden
   const breadcrumbLd = categorySlug && {
@@ -172,7 +173,7 @@ export default function CategoryPageContent({
                 key={product.id}
                 product={product}
                 index={i}
-                onClick={() => setActiveProduct(product.modal)}
+                kategori={categorySlug ?? ""}
               />
             ))}
           </div>
@@ -208,7 +209,6 @@ export default function CategoryPageContent({
         </AnimateOnScroll>
       </section>
 
-      <ProductModal product={activeProduct} onClose={() => setActiveProduct(null)} />
     </main>
   );
 }
@@ -216,17 +216,17 @@ export default function CategoryPageContent({
 function ProductCard({
   product,
   index,
-  onClick,
+  kategori,
 }: {
   product: CategoryProduct;
   index: number;
-  onClick: () => void;
+  kategori: string;
 }) {
   return (
     <AnimateOnScroll delay={index * 0.08}>
-      <button
-        onClick={onClick}
-        className="group w-full overflow-hidden rounded-3xl border border-border bg-surface text-left shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]"
+      <Link
+        href={`/produkter/${kategori}/${product.slug ?? product.id}`}
+        className="group block w-full overflow-hidden rounded-3xl border border-border bg-surface text-left shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]"
       >
         {product.image ? (
           <div className="relative aspect-[4/3] overflow-hidden bg-bg-light">
@@ -257,7 +257,7 @@ function ProductCard({
             </svg>
           </span>
         </div>
-      </button>
+      </Link>
     </AnimateOnScroll>
   );
 }

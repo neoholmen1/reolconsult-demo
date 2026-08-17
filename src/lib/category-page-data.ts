@@ -44,6 +44,7 @@ export async function getCategoryPageData(
     productsFromDb.length > 0
       ? productsFromDb.map((p) => ({
           id: p.id,
+          slug: p.slug ?? p.id,
           title: p.title,
           shortDesc: p.short_description,
           image: p.hero_image_url ?? undefined,
