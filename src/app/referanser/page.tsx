@@ -12,7 +12,7 @@ import {
 } from "@/lib/cms";
 
 export const metadata: Metadata = {
-  title: "Referanser – Reol-Consult AS",
+  title: "Referanser",
   description:
     "Se noen av kundene som har valgt Reol-Consult for sine innredningsløsninger.",
 };

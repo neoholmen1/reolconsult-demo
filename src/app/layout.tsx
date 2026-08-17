@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://reolconsult.no"),
   title: {
     default: "Reol-Consult AS – Lager- og butikkinnredning",
-    template: "%s",
+    template: "%s | Reol-Consult AS",
   },
   description:
     "Reol-Consult leverer lager-, butikk-, verksted-, kontor- og garderobeinnredning. Kontakt oss for tilbud.",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
       "Reol-Consult leverer lager-, butikk-, verksted-, kontor- og garderobeinnredning. Kontakt oss for tilbud.",
     images: [
       {
-        url: "/logo-hd.png",
+        url: "/og-reolconsult.png",
         width: 1200,
         height: 630,
         alt: "Reol-Consult AS",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     title: "Reol-Consult AS – Lager- og butikkinnredning",
     description:
       "Reol-Consult leverer lager-, butikk-, verksted-, kontor- og garderobeinnredning.",
-    images: ["/logo-hd.png"],
+    images: ["/og-reolconsult.png"],
   },
 };
 
@@ -80,8 +80,8 @@ export default async function RootLayout({
     "@id": "https://reolconsult.no/#organization",
     name: site?.name ?? "Reol-Consult AS",
     url: "https://reolconsult.no",
-    logo: "https://reolconsult.no/logo-hd.png",
-    image: "https://reolconsult.no/logo-hd.png",
+    logo: "https://reolconsult.no/logo-reolconsult.png",
+    image: "https://reolconsult.no/og-reolconsult.png",
     telephone: settings.phone ? `+47 ${settings.phone}` : "+47 33 36 55 80",
     email: settings.email_general ?? "mail@reolconsult.no",
     address: {

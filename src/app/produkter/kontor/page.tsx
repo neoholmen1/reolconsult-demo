@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import { getCategoryPageData } from "@/lib/category-page-data";
 import CategoryPageContent, { type CategoryProduct } from "@/components/CategoryPageContent";
+
+
+export const metadata: Metadata = {
+  title: "Kontorinnredning og arkiv",
+  description:
+    "Skrivebord, oppbevaring, arkivreoler og kontormøbler. Komplette løsninger fra tegning til ferdig montert, levert i hele Norge.",
+  alternates: { canonical: "/produkter/kontor" },
+};
 
 const FALLBACK_PRODUCTS: CategoryProduct[] = [
   {

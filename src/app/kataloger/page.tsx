@@ -4,7 +4,7 @@ import { getCurrentSite, getSiteSettingsOrFallback, formatPhoneLink } from "@/li
 import { getPageSections, getSectionField } from "@/lib/cms";
 
 export const metadata: Metadata = {
-  title: "Kataloger – Reol-Consult AS",
+  title: "Kataloger",
   description:
     "Bla gjennom produktkataloger fra Reol-Consult digitalt: butikkinnredning, disker, hjul, miljøsikring og verkstedinnredning.",
 };

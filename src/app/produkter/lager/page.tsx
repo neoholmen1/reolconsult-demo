@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import { getCategoryPageData } from "@/lib/category-page-data";
 import CategoryPageContent, { type CategoryProduct } from "@/components/CategoryPageContent";
+
+
+export const metadata: Metadata = {
+  title: "Lagerinnredning og pallreoler",
+  description:
+    "Pallreoler, småvarereoler, mesanin, grenreoler og spesialreoler til lager. Vi prosjekterer, leverer og monterer i hele Norge. HMS-sikkerhetskontroll av eksisterende reoler.",
+  alternates: { canonical: "/produkter/lager" },
+};
 
 const FALLBACK_PRODUCTS: CategoryProduct[] = [
   {

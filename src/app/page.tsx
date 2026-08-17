@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import ProductCategories from "@/components/sections/ProductCategories";
 import ProcessSection from "@/components/sections/ProcessSection";
@@ -9,6 +10,14 @@ import UsedSalesTeaser from "@/components/sections/UsedSalesTeaser";
 import CTASection from "@/components/sections/CTASection";
 import { getCurrentSite } from "@/lib/site";
 import { getPage } from "@/lib/cms";
+
+
+export const metadata: Metadata = {
+  title: "Lager- og butikkinnredning siden 1984",
+  description:
+    "Reol-Consult leverer innredning til lager, butikk, verksted, kontor, arkiv og garderobe — fra første tegning til ferdig montert. 350 kvm utstilling i Tønsberg, leveranse i hele Norge.",
+  alternates: { canonical: "/" },
+};
 
 export default async function Forside() {
   const site = await getCurrentSite();

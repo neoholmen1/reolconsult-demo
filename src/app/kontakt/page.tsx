@@ -5,11 +5,11 @@ import { getPageSections, getSectionField, getTeamMembers } from "@/lib/cms";
 import KontaktContent, { type KontaktAnsatt } from "./kontakt-content";
 
 export const metadata: Metadata = {
-  title: "Kontakt – Reol-Consult AS",
+  title: "Kontakt",
   description:
     "Ta kontakt med Reol-Consult AS for tilbud, rådgivning eller besøk i showroom på Vear. Telefon 33 36 55 80.",
   openGraph: {
-    title: "Kontakt – Reol-Consult AS",
+    title: "Kontakt",
     description:
       "Ta kontakt med Reol-Consult AS for tilbud, rådgivning eller besøk i showroom på Vear.",
     type: "website",

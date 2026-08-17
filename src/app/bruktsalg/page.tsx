@@ -6,7 +6,7 @@ import { getPageSections, getSectionField } from "@/lib/cms";
 import { ryddTekst } from "@/lib/tekst";
 
 export const metadata: Metadata = {
-  title: "Bruktsalg – Reol-Consult AS",
+  title: "Bruktsalg",
   description:
     "Brukte reoler, lagerinnredning og butikkinnredning til gode priser. Kvalitetskontrollert av Reol-Consult.",
 };

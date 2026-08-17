@@ -6,7 +6,7 @@ import { getPageSections, getSectionField } from "@/lib/cms";
 import { ryddTekst } from "@/lib/tekst";
 
 export const metadata: Metadata = {
-  title: "Om oss – Reol-Consult AS",
+  title: "Om oss",
   description:
     "Reol-Consult AS ble etablert i 1984. Bredt sortiment innen butikk, lager, verksted, kontor, arkiv og garderobe.",
 };

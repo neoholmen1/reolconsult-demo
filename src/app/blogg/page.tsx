@@ -6,11 +6,11 @@ import { getCurrentSite } from "@/lib/site";
 import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
-  title: "Blogg – Reol-Consult AS",
+  title: "Blogg",
   description:
     "Tips, råd og nyheter om innredning til lager, butikk, kontor og verksted fra Reol-Consult AS.",
   openGraph: {
-    title: "Blogg – Reol-Consult AS",
+    title: "Blogg",
     description:
       "Tips, råd og nyheter om innredning fra Reol-Consult AS.",
     type: "website",

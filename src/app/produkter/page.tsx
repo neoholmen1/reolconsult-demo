@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import { getCurrentSite } from "@/lib/site";
 import { getCategories, getPageSections, getSectionField } from "@/lib/cms";
 import ProdukterContent, { type CategoryItem } from "./produkter-content";
+
+
+export const metadata: Metadata = {
+  title: "Vårt sortiment",
+  description:
+    "Alt fra mindre detaljinnredninger til komplette systemer for store miljøer: lager, butikk, verksted, kontor, garderobe og skole. Uforpliktende tilbud og gratis befaring.",
+  alternates: { canonical: "/produkter" },
+};
 
 const FALLBACK_CATEGORIES: CategoryItem[] = [
   { slug: "lager", title: "Lagerinnredning", subtitle: "Pallreoler, stålhyller, mesanin og spesialreoler", image: "https://reolconsult.no/wp-content/uploads/2022/11/Hekta-Pa-Tur-2-scaled.jpg" },

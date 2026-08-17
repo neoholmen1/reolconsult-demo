@@ -3,7 +3,7 @@ import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { getCurrentSite, getSiteSettingsOrFallback } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Personvern – Reol-Consult AS",
+  title: "Personvern",
   description:
     "Reol-Consult AS sin personvernerklæring: hva vi samler inn, hvordan vi bruker det, og dine rettigheter.",
 };

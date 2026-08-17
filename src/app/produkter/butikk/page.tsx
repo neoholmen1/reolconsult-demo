@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import { getCategoryPageData } from "@/lib/category-page-data";
 import CategoryPageContent, { type CategoryProduct } from "@/components/CategoryPageContent";
+
+
+export const metadata: Metadata = {
+  title: "Butikkinnredning",
+  description:
+    "Gondoler, disker, veggreoler og komplett butikkinnredning. Vi tegner løsningen etter lokalet ditt og monterer ferdig. 350 kvm utstilling i Tønsberg.",
+  alternates: { canonical: "/produkter/butikk" },
+};
 
 const FALLBACK_PRODUCTS: CategoryProduct[] = [
   {

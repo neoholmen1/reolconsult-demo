@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import { getCategoryPageData } from "@/lib/category-page-data";
 import CategoryPageContent, { type CategoryProduct } from "@/components/CategoryPageContent";
+
+
+export const metadata: Metadata = {
+  title: "Verkstedinnredning",
+  description:
+    "Arbeidsbord, verktøyskap, oppbevaring og komplett verkstedinnredning til industri og bilverksted. Robuste løsninger tilpasset lokalet.",
+  alternates: { canonical: "/produkter/verksted" },
+};
 
 const FALLBACK_PRODUCTS: CategoryProduct[] = [
   {

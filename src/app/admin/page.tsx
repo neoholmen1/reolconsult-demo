@@ -122,6 +122,20 @@ const CATEGORY_GROUPS = [
 
 export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null);
+
+  // ── Brukeradministrasjon ──
+  type AdminBruker = {
+    id: string; epost: string; opprettet: string;
+    sistInnlogget: string | null; erDegSelv: boolean;
+  };
+  const [brukere, setBrukere] = useState<AdminBruker[]>([]);
+  const [brukereLaster, setBrukereLaster] = useState(false);
+  const [brukereFeil, setBrukereFeil] = useState<string | null>(null);
+  const [visBrukerSkjema, setVisBrukerSkjema] = useState(false);
+  const [nyEpost, setNyEpost] = useState("");
+  const [nyPassord, setNyPassord] = useState("");
+  const [oppretter, setOppretter] = useState(false);
+  const [slettBekreft, setSlettBekreft] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -462,6 +476,79 @@ export default function AdminPage() {
       return;
     }
     setDocuments((prev) => prev.filter((d) => d.id !== id));
+  }
+
+  // ── Brukeradministrasjon ──
+  // Alle kall går til /api/admin/users, som verifiserer sesjonen server-side
+  // før service role-nøkkelen tas i bruk. Nøkkelen finnes aldri i klienten.
+  async function medToken(): Promise<Record<string, string>> {
+    const { data } = await supabase.auth.getSession();
+    const t = data.session?.access_token;
+    return t ? { Authorization: `Bearer ${t}`, "Content-Type": "application/json" } : {};
+  }
+
+  async function hentBrukere() {
+    setBrukereLaster(true);
+    setBrukereFeil(null);
+    try {
+      const res = await fetch("/api/admin/users", { headers: await medToken() });
+      const json = await res.json();
+      if (!res.ok) setBrukereFeil(json.error ?? "Kunne ikke hente brukere.");
+      else setBrukere(json.brukere ?? []);
+    } catch {
+      setBrukereFeil("Nådde ikke serveren.");
+    }
+    setBrukereLaster(false);
+  }
+
+  function genererPassord() {
+    const tegn = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#%*";
+    const buf = new Uint32Array(16);
+    crypto.getRandomValues(buf);
+    setNyPassord(Array.from(buf, (n) => tegn[n % tegn.length]).join(""));
+  }
+
+  async function opprettBruker() {
+    if (nyPassord.length < 8) {
+      alert("Passordet må ha minst 8 tegn.");
+      return;
+    }
+    setOppretter(true);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: await medToken(),
+        body: JSON.stringify({ epost: nyEpost, passord: nyPassord }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        alert(json.error ?? "Kunne ikke opprette brukeren.");
+      } else {
+        if (json.advarsel) alert(json.advarsel);
+        setBrukere((f) => [...f, json.bruker]);
+        setNyEpost("");
+        setNyPassord("");
+        setVisBrukerSkjema(false);
+      }
+    } catch {
+      alert("Nådde ikke serveren.");
+    }
+    setOppretter(false);
+  }
+
+  async function slettBruker(id: string) {
+    try {
+      const res = await fetch(`/api/admin/users?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: await medToken(),
+      });
+      const json = await res.json();
+      if (!res.ok) alert(json.error ?? "Kunne ikke slette brukeren.");
+      else setBrukere((f) => f.filter((b) => b.id !== id));
+    } catch {
+      alert("Nådde ikke serveren.");
+    }
+    setSlettBekreft(null);
   }
 
   // Login
@@ -1303,6 +1390,142 @@ export default function AdminPage() {
                           Innlogget som <span className="font-medium text-[#171717]">{user.email}</span>
                         </p>
                         <p className="mt-1 text-[11.5px] text-[#a3a3a3]">Rolle: {siteRole}</p>
+                      </div>
+                    </div>
+
+                    {/* Brukere — opprettes via /api/admin/users, som verifiserer
+                        sesjonen server-side. Service role-nøkkelen er aldri her. */}
+                    <div className="overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                      <div className="flex items-center justify-between border-b border-[#ececec] bg-[#fafaf9] px-6 py-3">
+                        <h3 className="text-[13px] font-semibold tracking-tight text-[#171717]">Brukere</h3>
+                        <button
+                          onClick={() => { setVisBrukerSkjema((v) => !v); if (brukere.length === 0) hentBrukere(); }}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#171717] px-3.5 py-1.5 text-[12px] font-semibold text-white transition hover:bg-[#333]"
+                        >
+                          <Plus className="h-3.5 w-3.5" strokeWidth={2} /> Legg til bruker
+                        </button>
+                      </div>
+
+                      <div className="p-6">
+                        {visBrukerSkjema && (
+                          <div className="mb-5 rounded-xl border border-[#ececec] bg-[#fafaf9] p-4">
+                            <label className="block text-[12px] font-medium text-[#171717]">E-post</label>
+                            <input
+                              type="email"
+                              value={nyEpost}
+                              onChange={(e) => setNyEpost(e.target.value)}
+                              placeholder="navn@reolconsult.no"
+                              className="mt-1 w-full rounded-lg border border-[#e5e5e5] px-3 py-2 text-[13px] outline-none focus:border-[#171717]"
+                            />
+                            <label className="mt-3 block text-[12px] font-medium text-[#171717]">
+                              Passord <span className="font-normal text-[#a3a3a3]">(minst 8 tegn)</span>
+                            </label>
+                            <div className="mt-1 flex gap-2">
+                              <input
+                                type="text"
+                                value={nyPassord}
+                                onChange={(e) => setNyPassord(e.target.value)}
+                                placeholder="Skriv inn, eller generer"
+                                className="flex-1 rounded-lg border border-[#e5e5e5] px-3 py-2 font-mono text-[13px] outline-none focus:border-[#171717]"
+                              />
+                              <button
+                                onClick={genererPassord}
+                                type="button"
+                                className="shrink-0 rounded-lg border border-[#e5e5e5] px-3 py-2 text-[12px] font-medium text-[#171717] transition hover:bg-white"
+                              >
+                                Generer
+                              </button>
+                            </div>
+                            <p className="mt-2 text-[11.5px] text-[#a3a3a3]">
+                              Passordet vises kun nå. Kopier det og gi det til brukeren — det kan ikke hentes fram igjen.
+                            </p>
+                            <div className="mt-4 flex gap-2">
+                              <button
+                                onClick={opprettBruker}
+                                disabled={oppretter || nyPassord.length < 8 || !nyEpost}
+                                className="rounded-full bg-[#171717] px-5 py-2 text-[13px] font-semibold text-white transition hover:bg-[#333] disabled:opacity-40"
+                              >
+                                {oppretter ? "Oppretter…" : "Opprett bruker"}
+                              </button>
+                              <button
+                                onClick={() => { setVisBrukerSkjema(false); setNyEpost(""); setNyPassord(""); }}
+                                className="rounded-full border border-[#e5e5e5] px-5 py-2 text-[13px] font-medium text-[#171717] transition hover:bg-[#fafaf9]"
+                              >
+                                Avbryt
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {brukereFeil && (
+                          <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-[12.5px] text-red-700">{brukereFeil}</p>
+                        )}
+
+                        {brukere.length === 0 && !brukereLaster ? (
+                          <button
+                            onClick={hentBrukere}
+                            className="text-[13px] font-medium text-[#171717] underline underline-offset-2"
+                          >
+                            Vis brukere
+                          </button>
+                        ) : brukereLaster ? (
+                          <p className="text-[13px] text-[#a3a3a3]">Laster brukere…</p>
+                        ) : (
+                          <ul className="divide-y divide-[#f0f0f0]">
+                            {brukere.map((b) => (
+                              <li key={b.id} className="flex items-center justify-between gap-3 py-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-[13px] font-medium text-[#171717]">
+                                    {b.epost}
+                                    {b.erDegSelv && (
+                                      <span className="ml-2 rounded bg-[#f0f0f0] px-1.5 py-0.5 text-[10.5px] font-semibold text-[#737373]">
+                                        deg
+                                      </span>
+                                    )}
+                                  </p>
+                                  <p className="mt-0.5 text-[11.5px] text-[#a3a3a3]">
+                                    Opprettet {new Date(b.opprettet).toLocaleDateString("nb-NO")}
+                                    {b.sistInnlogget
+                                      ? ` · sist innlogget ${new Date(b.sistInnlogget).toLocaleDateString("nb-NO")}`
+                                      : " · aldri innlogget"}
+                                  </p>
+                                </div>
+                                {b.erDegSelv ? (
+                                  <span
+                                    title="Du kan ikke slette din egen bruker — da mister du tilgangen til panelet."
+                                    className="shrink-0 cursor-not-allowed rounded-lg border border-[#f0f0f0] p-1.5 text-[#d4d4d4]"
+                                  >
+                                    <Trash2 className="h-4 w-4" strokeWidth={1.8} />
+                                  </span>
+                                ) : slettBekreft === b.id ? (
+                                  <div className="flex shrink-0 items-center gap-2">
+                                    <span className="text-[11.5px] text-[#737373]">Sikker? Kan ikke angres.</span>
+                                    <button
+                                      onClick={() => slettBruker(b.id)}
+                                      className="rounded-lg bg-red-600 px-2.5 py-1.5 text-[12px] font-semibold text-white transition hover:bg-red-700"
+                                    >
+                                      Slett
+                                    </button>
+                                    <button
+                                      onClick={() => setSlettBekreft(null)}
+                                      className="rounded-lg border border-[#e5e5e5] px-2.5 py-1.5 text-[12px] text-[#171717]"
+                                    >
+                                      Avbryt
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => setSlettBekreft(b.id)}
+                                    title="Slett bruker"
+                                    className="shrink-0 rounded-lg border border-[#f0f0f0] p-1.5 text-[#a3a3a3] transition hover:border-red-200 hover:text-red-600"
+                                  >
+                                    <Trash2 className="h-4 w-4" strokeWidth={1.8} />
+                                  </button>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     </div>
                   </>
