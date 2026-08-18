@@ -55,14 +55,18 @@ const PROMPT_CACHE_MS = 60_000;
  * Fallback-tekstene. Disse er ordrett det assistenten skal si når den ikke har
  * dekning i dataene — bedre å si «vet ikke» enn å gjette feil foran en kunde.
  */
-const FALLBACK: Record<Lang, { ukjent: string; utenfor: string }> = {
+const FALLBACK: Record<Lang, { ukjent: string; utenfor: string; pris: string }> = {
   nb: {
+    pris:
+      "Ta kontakt på 33 36 55 80 eller mail@reolconsult.no for priser og tilbud!",
     ukjent:
       "Det har jeg dessverre ikke informasjon om. Ring oss på 33 36 55 80 eller send e-post til mail@reolconsult.no, så hjelper vi deg!",
     utenfor:
       "Jeg er her for å hjelpe deg med spørsmål om Reol-Consult og våre produkter. Er det noe jeg kan hjelpe deg med?",
   },
   en: {
+    pris:
+      "Please contact us at +47 33 36 55 80 or mail@reolconsult.no for prices and quotes!",
     ukjent:
       "I don't have information about that, unfortunately. Call us at +47 33 36 55 80 or email mail@reolconsult.no and we'll help you!",
     utenfor:
@@ -162,6 +166,8 @@ async function buildSystemPrompt(lang: Lang): Promise<string> {
   const email = (sg.email_general as string) ?? "mail@reolconsult.no";
   const address = (sg.visit_address as string) ?? "Smiløkka 7, 3173 Vear";
   const hours = (sg.opening_hours as string) ?? "Mandag–fredag: 08:00–16:00";
+  // Trygg default: uten kolonnen (før migrasjonen) eller uten verdi er priser AV.
+  const visPriser = sg.show_prices === true;
 
   let prompt = `Du er kundeservice-assistenten til ${siteName}, en norsk innredningsbedrift som leverer reoler, hyller og innredning til lager, butikk, kontor, verksted, garderobe og skole/barnehage. Etablert 1984. Holder til på Vear i Tønsberg.
 
@@ -189,11 +195,23 @@ ABSOLUTTE REGLER — disse går foran alt annet:
    Spør kunden om levering, frister, garanti eller holdbarhet: si at det må
    bekreftes av oss, og henvis til ${phone} eller ${email}.
 
-4. PRISER ER ALLTID VEILEDENDE.
-   Oppgi kun priser som står nedenfor, og alltid som "fra X kr" eller
-   "ca. X kr". Avslutt alltid med "Kontakt oss for eksakt tilbud".
-   Står det ingen pris: bruk fallback-svaret i regel 2. Aldri estimer,
-   aldri regn ut totalpriser, aldri antyd et prisnivå.
+4. ${
+  visPriser
+    ? `PRISER — ALLTID EKS. MVA.
+   Oppgi kun priser som står nedenfor. Skriv dem ALLTID slik:
+   "fra 4 500 kr eks. mva"${lang === "en" ? ' (engelsk: "from NOK 4,500 excl. VAT")' : ""}.
+   Nevn at merverdiavgift kommer i tillegg — f.eks. "Alle priser er eks. mva."
+   Avslutt alltid med "Kontakt oss for eksakt tilbud".
+   Står det ingen pris på produktet: svar med fallback-teksten i regel 2.
+   Aldri estimer, aldri regn ut totalpriser, aldri antyd et prisnivå.`
+    : `PRISER SKAL IKKE OPPGIS.
+   Prisvisning er slått AV for denne siden. Du har ingen priser i dataene, og
+   du skal ALDRI nevne et beløp, et prisnivå, et anslag eller en prisklasse —
+   heller ikke om kunden maser eller oppgir et tall selv.
+   Spør kunden om pris, kostnad, hva noe koster, rabatt eller tilbud, svarer du
+   nøyaktig dette, ordrett:
+   "${FALLBACK[lang].pris}"`
+}
 
 5. ALDRI OMTAL KONKURRENTER.
    Ikke sammenlign oss med andre leverandører, ikke vurder dem, ikke si om vi
@@ -249,7 +267,12 @@ KONTAKTINFO:
   if (prodsArr.length > 0) {
     prompt += `\nPRODUKTER (Reol-Consults sortiment):\n`;
     for (const p of prodsArr) {
-      const priceInfo = p.price_from != null ? ` — Fra ${p.price_from} kr${p.price_unit ? " " + p.price_unit : ""}` : "";
+      // Prisen utelates helt fra prompten når visning er av. Modellen kan
+      // ikke lekke en pris den aldri har sett — tryggere enn å be den la være.
+      const priceInfo =
+        visPriser && p.price_from != null
+          ? ` — Fra ${p.price_from.toLocaleString("nb-NO")} kr eks. mva${p.price_unit ? " " + p.price_unit : ""}`
+          : "";
       const specs = Array.isArray(p.specs) && p.specs.length > 0 ? ` [${p.specs.slice(0, 6).join(", ")}]` : "";
       prompt += `• ${p.title} (${p.category_slug})${priceInfo}: ${p.short_description}${specs}\n`;
       if (p.long_description && p.long_description.length > 0 && p.long_description !== p.short_description) {
@@ -294,16 +317,20 @@ KONTAKTINFO:
         for (const v of k.variants) {
           const parts: string[] = [];
           if (v.name) parts.push(v.name);
-          if (v.price) parts.push(`pris: ${v.price} kr`);
+          if (visPriser && v.price) parts.push(`pris: ${v.price} kr eks. mva`);
           if (v.stock) parts.push(`lager: ${v.stock}`);
           if (v.delivery) parts.push(`leveringstid: ${v.delivery}`);
           if (parts.length > 0) prompt += `  • ${parts.join(", ")}\n`;
         }
       }
       if (Array.isArray(k.discounts) && k.discounts.length > 0) {
-        prompt += `Mengderabatt:\n`;
-        for (const d of k.discounts) {
-          if (d.min_quantity && d.price) prompt += `  • Over ${d.min_quantity} stk: ${d.price} kr per stk\n`;
+        // Rabattpriser er også priser — utelates helt når visning er av.
+        if (visPriser) {
+          prompt += `Mengderabatt:\n`;
+          for (const d of k.discounts) {
+            if (d.min_quantity && d.price)
+              prompt += `  • Over ${d.min_quantity} stk: ${d.price} kr eks. mva per stk\n`;
+          }
         }
       }
       if (k.extra_info) prompt += `Ekstra: ${k.extra_info}\n`;

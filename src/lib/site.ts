@@ -19,6 +19,8 @@ export type SiteSettings = {
   visit_address: string | null;
   postal_address: string | null;
   opening_hours: string | null;
+  /** Når true kan chatboten oppgi priser. Priser lagres alltid eks. mva. */
+  show_prices?: boolean;
   social: Record<string, string>;
   updated_at: string;
 };

@@ -213,7 +213,7 @@ export default function ProdukterListPage() {
                         <span className="font-mono">/{p.slug}</span>
                       </p>
                       {p.price_from != null && (
-                        <p className="mt-0.5 text-[11.5px] text-[#737373]">Fra {p.price_from} kr {p.price_unit}</p>
+                        <p className="mt-0.5 text-[11.5px] text-[#737373]">Fra {p.price_from} kr eks. mva {p.price_unit}</p>
                       )}
                     </div>
                   </Link>

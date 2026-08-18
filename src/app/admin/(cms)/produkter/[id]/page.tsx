@@ -228,12 +228,12 @@ export default function ProduktEditor() {
             </div>
           </Card>
 
-          <Card title="Pris">
+          <Card title="Pris" description="Priser legges inn eks. mva. Chatboten merker automatisk at mva tilkommer.">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="text-[12px] font-medium text-[#404040]">Fra-pris (kr)</span>
                 <input type="number" value={product.price_from ?? ""} onChange={(e) => update("price_from", e.target.value === "" ? null : Number(e.target.value))} placeholder="2990" className="mt-1.5 w-full rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
-                <span className="mt-1.5 block text-[11px] text-[#a3a3a3]">La stå tomt for å skjule pris.</span>
+                <span className="mt-1.5 block text-[11px] text-[#a3a3a3]">Eks. mva. La stå tomt for å skjule pris.</span>
               </label>
               <FieldText label="Enhet" value={product.price_unit} onChange={(v) => update("price_unit", v)} placeholder="per seksjon" />
             </div>
@@ -259,11 +259,22 @@ export default function ProduktEditor() {
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="overflow-hidden rounded-2xl border border-[#ececec] bg-white">
       <div className="border-b border-[#ececec] bg-[#fafaf9] px-6 py-3">
         <h3 className="text-[13px] font-semibold tracking-tight text-[#171717]">{title}</h3>
+        {description && (
+          <p className="mt-0.5 text-[11.5px] leading-relaxed text-[#737373]">{description}</p>
+        )}
       </div>
       <div className="p-6">{children}</div>
     </section>

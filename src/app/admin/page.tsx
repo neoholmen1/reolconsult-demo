@@ -411,6 +411,7 @@ export default function AdminPage() {
       visit_address: siteSettings.visit_address,
       postal_address: siteSettings.postal_address,
       opening_hours: siteSettings.opening_hours,
+      show_prices: siteSettings.show_prices ?? false,
       social: siteSettings.social ?? {},
     };
     const { error } = await supabase
@@ -1365,6 +1366,30 @@ export default function AdminPage() {
                           rows={4}
                           className="w-full resize-y rounded-lg border border-[#ececec] bg-[#fafaf9] px-3.5 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
                         />
+                      </label>
+                    </SettingsCard>
+
+                    <SettingsCard
+                      title="Prisvisning i chatboten"
+                      description="Priser legges inn eks. mva. Chatboten merker automatisk at mva tilkommer."
+                    >
+                      <label className="flex cursor-pointer items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={siteSettings.show_prices ?? false}
+                          onChange={(e) => updateSettingField("show_prices", e.target.checked)}
+                          className="mt-0.5 h-4 w-4 shrink-0 accent-[#dc2626]"
+                        />
+                        <span>
+                          <span className="block text-[13px] font-medium text-[#171717]">
+                            La chatboten oppgi priser
+                          </span>
+                          <span className="mt-0.5 block text-[11.5px] leading-relaxed text-[#737373]">
+                            {siteSettings.show_prices
+                              ? "Chatboten oppgir priser fra produktregisteret, alltid merket «eks. mva» og med oppfordring om å kontakte dere for eksakt tilbud."
+                              : "Chatboten nevner ingen priser i det hele tatt, og henviser til telefon og e-post ved prisspørsmål."}
+                          </span>
+                        </span>
                       </label>
                     </SettingsCard>
 
