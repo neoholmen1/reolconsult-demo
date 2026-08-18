@@ -414,9 +414,30 @@ export default function AdminPage() {
       show_prices: siteSettings.show_prices ?? false,
       social: siteSettings.social ?? {},
     };
-    const { error } = await supabase
+    let { error } = await supabase
       .from("site_settings")
       .upsert(payload, { onConflict: "site_id" });
+
+    // show_prices-kolonnen krever en migrasjon. Er den ikke kjørt, skal det
+    // ikke blokkere lagring av kontaktinfo og sosiale medier — vi prøver på
+    // nytt uten feltet og varsler i stedet.
+    if (error && /show_prices/.test(error.message)) {
+      const { show_prices: _utelatt, ...utenPris } = payload;
+      const p2 = await supabase
+        .from("site_settings")
+        .upsert(utenPris, { onConflict: "site_id" });
+      error = p2.error;
+      if (!error) {
+        alert(
+          "Lagret — men prisvisning ble ikke lagret.\n\n" +
+            "Kolonnen show_prices mangler i databasen. Kjør migrasjonen i " +
+            "Supabase → SQL Editor:\n\n" +
+            "alter table site_settings\n" +
+            "  add column if not exists show_prices boolean not null default false;",
+        );
+      }
+    }
+
     if (!error) {
       setSettingsSaved(true);
       setTimeout(() => setSettingsSaved(false), 3000);
