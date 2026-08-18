@@ -87,6 +87,11 @@ export default async function Footer() {
                   Skole & barnehage
                 </Link>
               </li>
+              <li>
+                <Link href="/kataloger" className="transition-colors duration-200 hover:text-accent">
+                  Kataloger
+                </Link>
+              </li>
             </ul>
           </div>
 

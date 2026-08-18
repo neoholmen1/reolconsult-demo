@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { getCurrentSite, getSiteSettingsOrFallback, formatPhoneLink } from "@/lib/site";
 import { getPageSections, getSectionField } from "@/lib/cms";
@@ -9,7 +10,15 @@ export const metadata: Metadata = {
     "Bla gjennom produktkataloger fra Reol-Consult digitalt: butikkinnredning, disker, hjul, miljøsikring og verkstedinnredning.",
 };
 
-const kataloger = [
+type Katalog = {
+  title: string;
+  description: string;
+  href: string;
+  /** Lenken hos leverandøren er død. Vises som «kommer», ikke som brutt lenke. */
+  utilgjengelig?: boolean;
+};
+
+const kataloger: Katalog[] = [
   {
     title: "Butikkinnredning",
     description: "Komplett produktkatalog for butikkinnredning — gondoler, veggsystemer og tilbehør.",
@@ -23,17 +32,20 @@ const kataloger = [
   {
     title: "Hjulkatalog",
     description: "Hjul og trinser for alle bruksområder.",
-    href: "https://viewer.zmags.com/publication/905cc178#/905cc178/1",
+    href: "",
+utilgjengelig: true,
   },
   {
     title: "Miljø & Lastsikring",
     description: "Oppsamlingskar, spillbarrierer og utstyr for sikker lasting.",
-    href: "https://viewer.zmags.com/publication/76b6daa8#/76b6daa8/1",
+    href: "",
+utilgjengelig: true,
   },
   {
     title: "Gigant Arbeidsplasskatalog",
     description: "Arbeidsbord, verktøyskap og verkstedinnredning.",
-    href: "https://viewer.zmags.com/publication/f98e993c#/f98e993c/1",
+    href: "",
+utilgjengelig: true,
   },
 ];
 
@@ -91,14 +103,9 @@ export default async function Kataloger() {
       <section className="bg-bg-light py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {kataloger.map((katalog, i) => (
-              <AnimateOnScroll key={katalog.title} delay={i * 0.08}>
-                <a
-                  href={katalog.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex h-full flex-col rounded-3xl border border-border bg-surface p-8 shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]"
-                >
+            {kataloger.map((katalog, i) => {
+              const innhold = (
+                <>
                   <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/5">
                     <PdfIcon />
                   </div>
@@ -106,15 +113,44 @@ export default async function Kataloger() {
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-text-muted">
                     {katalog.description}
                   </p>
-                  <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-all duration-300 group-hover:gap-2.5">
-                    Åpne katalog
-                    <svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                    </svg>
-                  </div>
-                </a>
-              </AnimateOnScroll>
-            ))}
+                  {katalog.utilgjengelig ? (
+                    <div className="mt-6 text-sm text-text-light">
+                      Ikke tilgjengelig digitalt —{" "}
+                      <Link href="/kontakt" className="font-semibold text-accent underline underline-offset-2">
+                        be om den
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-all duration-300">
+                      Åpne katalog
+                      <svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    </div>
+                  )}
+                </>
+              );
+              const felles =
+                "group flex h-full flex-col rounded-3xl border border-border bg-surface p-8 shadow-[var(--shadow-soft)]";
+              return (
+                <AnimateOnScroll key={katalog.title} delay={i * 0.08}>
+                  {katalog.utilgjengelig ? (
+                    // Ingen lenke: en <a> uten href er ikke fokuserbar og
+                    // lover en handling som ikke finnes.
+                    <div className={`${felles} opacity-70`}>{innhold}</div>
+                  ) : (
+                    <a
+                      href={katalog.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${felles} transition-shadow duration-300 hover:shadow-[var(--shadow-lift)]`}
+                    >
+                      {innhold}
+                    </a>
+                  )}
+                </AnimateOnScroll>
+              );
+            })}
           </div>
         </div>
       </section>
