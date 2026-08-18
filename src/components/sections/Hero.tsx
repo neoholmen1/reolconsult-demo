@@ -71,7 +71,7 @@ export default function Hero({ heroData }: { heroData?: HeroData }) {
       {/* Innhold */}
       {/* pb på lg gir plass til den flytende kategoriraden under, som trekkes
           opp med -mt-24 og ellers legger seg oppå stat-chipsene. */}
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 items-center px-4 pt-[150px] pb-12 sm:px-6 lg:px-8 lg:pt-[150px] lg:pb-44">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 items-center px-4 pt-[150px] pb-32 sm:px-6 sm:pb-40 lg:px-8 lg:pt-[150px] lg:pb-44">
         <div className="grid w-full items-center gap-10 lg:grid-cols-2 lg:gap-10">
         <motion.div style={{ y: textY, opacity: textOpacity }} className="max-w-2xl">
           <motion.p
