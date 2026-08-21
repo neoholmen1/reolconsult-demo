@@ -180,6 +180,7 @@ export default function AdminPage() {
 
   // Chatbot test
   const [testMessage, setTestMessage] = useState("");
+  const [testSvarer, setTestSvarer] = useState(false);
   const [testMessages, setTestMessages] = useState<{ role: "user" | "bot"; text: string; followUps?: string[] }[]>([]);
   const [docContents, setDocContents] = useState<{ title: string; content: string }[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -632,77 +633,81 @@ export default function AdminPage() {
     "do", "does", "did", "your", "my", "our",
   ]);
 
-  function extractWords(text: string): string[] {
-    return text.toLowerCase().replace(/[?!.,;:()"/\\]/g, " ").split(/\s+/).filter((w) => w.length > 2 && !STOPWORDS.has(w));
-  }
 
-  function findBestMatch(input: string): { text: string; followUps: string[] } {
-    const words = extractWords(input);
-    if (words.length === 0) {
-      return { text: "Skriv et spørsmål, f.eks. «pallreoler», «levering», «priser» eller «kontaktinfo».", followUps: ["Produkter", "Kontaktinfo", "Levering", "Bruktsalg"] };
-    }
-    let bestCat: Category | null = null;
-    let bestScore = 0;
-    for (const cat of categories) {
-      let score = 0;
-      const catWords = extractWords(cat.category + " " + cat.description + " " + cat.extra_info);
-      for (const word of words) {
-        if (cat.category.toLowerCase().includes(word)) score += 5;
-        for (const cw of catWords) {
-          if (word === cw || (word.length >= 4 && cw.startsWith(word)) || (word.length >= 4 && word.startsWith(cw))) { score += 1; break; }
-        }
-      }
-      for (const v of cat.variants) {
-        if (words.some((w) => v.name.toLowerCase().includes(w))) score += 2;
-      }
-      if (score > bestScore) { bestScore = score; bestCat = cat; }
-    }
-    let bestDocMatch: { title: string; snippet: string } | null = null;
-    let bestDocScore = 0;
-    for (const doc of docContents) {
-      const docWords = extractWords(doc.content);
-      let score = 0;
-      for (const word of words) {
-        for (const dw of docWords) {
-          if (word === dw || (word.length >= 4 && dw.startsWith(word)) || (word.length >= 4 && word.startsWith(dw))) { score += 1; break; }
-        }
-      }
-      if (score > bestDocScore) {
-        bestDocScore = score;
-        const lines = doc.content.split("\n").filter((l) => l.trim());
-        const matchingLine = lines.find((l) => words.some((w) => l.toLowerCase().includes(w)));
-        const idx = matchingLine ? lines.indexOf(matchingLine) : 0;
-        bestDocMatch = { title: doc.title, snippet: lines.slice(Math.max(0, idx - 1), idx + 4).join("\n").trim() };
-      }
-    }
-    if (bestCat && bestScore >= 2) {
-      let r = `**${bestCat.category}**\n\n${bestCat.description}`;
-      if (bestCat.variants.length > 0) { r += "\n\n**Varianter:**"; for (const v of bestCat.variants) { r += `\n• ${v.name}`; if (v.price) r += ` — ${v.price} kr`; if (v.stock) r += ` (${v.stock})`; if (v.delivery) r += ` [${v.delivery}]`; } }
-      if (bestCat.discounts.length > 0) { r += "\n\n**Mengderabatt:**"; for (const d of bestCat.discounts) r += `\n• Over ${d.min_quantity} stk: ${d.price} kr/stk`; }
-      if (bestCat.extra_info) r += `\n\n${bestCat.extra_info}`;
-      if (bestDocMatch && bestDocScore >= 2) r += `\n\nFra «${bestDocMatch.title}»:\n${bestDocMatch.snippet}`;
-      r += "\n\nKontakt oss på 33 36 55 80 for eksakt tilbud!";
-      const f: string[] = bestCat.category_type === "produkt" ? ["Priser", "Levering", "Kontakt"] : bestCat.category_type === "tjeneste" ? ["Bestille", "Kontakt"] : ["Produkter", "Kontakt"];
-      return { text: r, followUps: f };
-    }
-    if (bestDocMatch && bestDocScore >= 2) {
-      return { text: `Fra «${bestDocMatch.title}»:\n\n${bestDocMatch.snippet}\n\nKontakt oss på 33 36 55 80 for mer info!`, followUps: ["Produkter", "Kontakt", "Bruktsalg"] };
-    }
-    return { text: "Beklager, jeg fant ikke noe relevant svar. Prøv f.eks. «pallreoler», «garderobeskap» eller «åpningstider».\n\nRing 33 36 55 80 eller mail@reolconsult.no.", followUps: ["Produkter", "Kontaktinfo", "Levering", "Bruktsalg"] };
-  }
-
-  function sendTestMessage(e: React.FormEvent) {
+  /**
+   * Test-chatten kaller /api/chat — samme endepunkt som kundene treffer.
+   *
+   * Den brukte tidligere et lokalt nøkkelordsøk (findBestMatch) som aldri
+   * gikk innom Claude. Det gjorde testen verdiløs: den viste priser selv når
+   * prisvisning var slått av, og svarte «Beklager, jeg fant ikke noe relevant
+   * svar» — noe den ekte assistenten aldri sier. Man testet en annen robot
+   * enn den kundene snakker med.
+   */
+  async function sendTestMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!testMessage.trim()) return;
+    if (!testMessage.trim() || testSvarer) return;
     const msg = testMessage.trim();
-    setTestMessages((prev) => [...prev, { role: "user", text: msg }]);
+    const historikk = [...testMessages, { role: "user" as const, text: msg }];
+    setTestMessages(historikk);
     setTestMessage("");
-    setTimeout(() => { const r = findBestMatch(msg); setTestMessages((prev) => [...prev, { role: "bot", text: r.text, followUps: r.followUps }]); }, 400);
+    setTestSvarer(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: historikk.map((m) => ({
+            role: m.role === "bot" ? "assistant" : "user",
+            content: m.text,
+          })),
+          lang: "nb",
+        }),
+      });
+      const data = await res.json();
+      setTestMessages((prev) => [
+        ...prev,
+        { role: "bot", text: data?.text || data?.error || "Fikk ikke svar fra assistenten." },
+      ]);
+    } catch {
+      setTestMessages((prev) => [
+        ...prev,
+        { role: "bot", text: "Nådde ikke assistenten. Sjekk nettverk og at ANTHROPIC_API_KEY er satt." },
+      ]);
+    }
+    setTestSvarer(false);
   }
 
-  function handleQuickReply(label: string) {
-    setTestMessages((prev) => [...prev, { role: "user", text: label }]);
-    setTimeout(() => { const r = findBestMatch(label); setTestMessages((prev) => [...prev, { role: "bot", text: r.text, followUps: r.followUps }]); }, 400);
+  /** Hurtigknappene går samme vei som skrevne meldinger — ellers ville de
+   *  fortsatt truffet det lokale søket og omgått vernet. */
+  async function handleQuickReply(label: string) {
+    if (testSvarer) return;
+    const historikk = [...testMessages, { role: "user" as const, text: label }];
+    setTestMessages(historikk);
+    setTestSvarer(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: historikk.map((m) => ({
+            role: m.role === "bot" ? "assistant" : "user",
+            content: m.text,
+          })),
+          lang: "nb",
+        }),
+      });
+      const data = await res.json();
+      setTestMessages((prev) => [
+        ...prev,
+        { role: "bot", text: data?.text || data?.error || "Fikk ikke svar fra assistenten." },
+      ]);
+    } catch {
+      setTestMessages((prev) => [
+        ...prev,
+        { role: "bot", text: "Nådde ikke assistenten." },
+      ]);
+    }
+    setTestSvarer(false);
   }
 
   // Accordion toggle
@@ -1261,8 +1266,10 @@ export default function AdminPage() {
             <div className="p-8 lg:p-10">
               <div className="mx-auto max-w-2xl">
                 <p className="text-[12.5px] text-[#737373]">
-                  Søker i <span className="font-medium text-[#171717]">{categories.length}</span> kategorier og{" "}
-                  <span className="font-medium text-[#171717]">{docContents.length}</span> dokumenter.
+                  Dette er den samme assistenten kundene snakker med — den bruker{" "}
+                  <span className="font-medium text-[#171717]">{categories.length}</span> kategorier og{" "}
+                  <span className="font-medium text-[#171717]">{docContents.length}</span> dokumenter,
+                  og følger prisinnstillingen din.
                 </p>
                 <div className="mt-4 flex h-[600px] flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -1319,6 +1326,7 @@ export default function AdminPage() {
                     <div className="flex gap-2">
                       <input
                         value={testMessage}
+                        disabled={testSvarer}
                         onChange={(e) => setTestMessage(e.target.value)}
                         placeholder="Skriv et spørsmål, f.eks. «pallreoler» eller «levering»..."
                         className="flex-1 rounded-full border border-[#ececec] bg-white px-4 py-2.5 text-[13px] text-[#171717] placeholder:text-[#a3a3a3] transition duration-150 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
