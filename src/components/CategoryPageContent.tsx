@@ -96,7 +96,6 @@ export default function CategoryPageContent({
           sizes="100vw"
           className="object-cover"
           priority
-          unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
         <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6 sm:pb-16 lg:px-8">
@@ -236,7 +235,6 @@ function ProductCard({
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-              unoptimized
             />
           </div>
         ) : (

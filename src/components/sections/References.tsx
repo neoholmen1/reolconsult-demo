@@ -64,7 +64,6 @@ export default async function References() {
                   width={120}
                   height={40}
                   className="max-h-8 max-w-full object-contain opacity-50 grayscale transition duration-300 group-hover:opacity-100 group-hover:grayscale-0"
-                  unoptimized
                 />
               ) : (
                 <span className="text-[13px] font-semibold tracking-wide text-text-muted dark:text-white/65 whitespace-nowrap transition-colors duration-300 group-hover:text-primary dark:group-hover:text-white">

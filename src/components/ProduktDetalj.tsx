@@ -53,6 +53,28 @@ export default async function ProduktDetalj({
     new Set([produkt.image, ...(produkt.modal.images ?? [])].filter((b): b is string => !!b)),
   );
 
+  // Product-schema: gir Google beskjed om at dette ER et produkt, ikke bare en
+  // side som nevner ett. Pris utelates med vilje — basen har ingen, og et
+  // tomt offers-felt er verre enn ingen.
+  const produktLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: produkt.title,
+    description: produkt.shortDesc,
+    ...(bilder.length > 0 ? { image: bilder } : {}),
+    brand: { "@type": "Brand", name: "Reol-Consult AS" },
+    category: breadcrumbLabel,
+    ...(produkt.modal.specs?.length
+      ? {
+          additionalProperty: produkt.modal.specs.map((v) => ({
+            "@type": "PropertyValue",
+            name: v,
+          })),
+        }
+      : {}),
+    url: `https://reolconsult.no/produkter/${kategori}/${produkt.slug ?? produkt.id}`,
+  };
+
   const ld = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -77,6 +99,7 @@ export default async function ProduktDetalj({
   return (
     <main className="bg-surface-warm pb-24">
       <JsonLd data={ld} />
+      <JsonLd data={produktLd} />
 
       <div className="mx-auto max-w-5xl px-4 pt-10 sm:px-6 sm:pt-16 lg:px-8">
         <nav aria-label="Brødsmuler" className="mb-6 flex flex-wrap items-center gap-2 text-sm">
@@ -139,7 +162,6 @@ export default async function ProduktDetalj({
                     className="object-cover"
                     // Bildene ligger på kundens gamle WordPress og er ikke
                     // konfigurert som remote pattern i next.config.
-                    unoptimized
                     priority={i === 0}
                   />
                 </figure>

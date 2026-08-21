@@ -94,7 +94,6 @@ export default function ProductModal({ product, onClose }: Props) {
                     fill
                     sizes="800px"
                     className="object-contain"
-                    unoptimized
                   />
                 </div>
 

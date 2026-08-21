@@ -65,7 +65,6 @@ export default async function OmOss() {
                 width={600}
                 height={400}
                 className="w-full rounded-[1.5rem] object-cover ring-1 ring-black/5 shadow-[var(--shadow-card)] sm:rounded-[2rem]"
-                unoptimized
               />
             </AnimateOnScroll>
           </div>

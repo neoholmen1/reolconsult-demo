@@ -71,7 +71,7 @@ function Card({ shot, sx, sy, reduce }: { shot: Shot; sx: MotionValue<number>; s
         animate={reduce ? {} : { y: [0, -shot.float, 0] }}
         transition={{ duration: shot.dur, delay: shot.delay, repeat: Infinity, ease: "easeInOut" }}
       >
-        <Image src={shot.src} alt={shot.alt} fill sizes="320px" className="object-cover" unoptimized />
+        <Image src={shot.src} alt={shot.alt} fill sizes="320px" className="object-cover" />
       </motion.div>
     </motion.div>
   );

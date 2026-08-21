@@ -97,7 +97,6 @@ export default async function BloggPage() {
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                          unoptimized
                         />
                       </div>
                     )}

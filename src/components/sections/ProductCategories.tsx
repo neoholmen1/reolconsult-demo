@@ -81,7 +81,6 @@ export default async function ProductCategories() {
                       fill
                       sizes={feature ? "(max-width: 640px) 100vw, 66vw" : "(max-width: 640px) 50vw, 33vw"}
                       className="img-grade object-cover group-hover:scale-[1.06]"
-                      unoptimized
                     />
                   )}
                   <div className="img-wash" />

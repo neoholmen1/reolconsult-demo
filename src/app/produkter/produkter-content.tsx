@@ -62,7 +62,6 @@ export default function ProdukterContent({
                   alt={cat.title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10" />
                 <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6">

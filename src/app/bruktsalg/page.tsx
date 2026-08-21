@@ -140,7 +140,6 @@ export default async function Bruktsalg() {
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
                   priority
-                  unoptimized
                   quality={90}
                 />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/30 to-transparent" />
@@ -239,7 +238,6 @@ export default async function Bruktsalg() {
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-6">
@@ -264,7 +262,6 @@ export default async function Bruktsalg() {
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 50vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                      unoptimized
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 p-5">

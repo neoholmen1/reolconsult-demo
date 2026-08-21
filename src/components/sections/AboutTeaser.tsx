@@ -58,7 +58,7 @@ export default async function AboutTeaser() {
                 <div className="flex items-center gap-5">
                   <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent/10 dark:bg-accent/20 text-accent ring-1 ring-accent/20 transition duration-300 group-hover:ring-accent/30">
                     {member.photo_url ? (
-                      <Image src={member.photo_url} alt={member.name} width={80} height={80} className="h-full w-full object-cover" unoptimized />
+                      <Image src={member.photo_url} alt={member.name} width={80} height={80} className="h-full w-full object-cover" />
                     ) : (
                       <span className="text-xl font-semibold">
                         {member.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}

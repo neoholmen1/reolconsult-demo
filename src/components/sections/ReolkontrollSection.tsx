@@ -86,7 +86,6 @@ export default async function ReolkontrollSection() {
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
-                  unoptimized
                   quality={90}
                 />
               </Parallax>

@@ -63,7 +63,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             fill
             sizes="100vw"
             className="object-cover"
-            unoptimized
             priority
           />
         </div>

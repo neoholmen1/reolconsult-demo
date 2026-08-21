@@ -108,7 +108,6 @@ export default async function Referanser() {
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                        unoptimized
                       />
                     </div>
                   )}
@@ -143,7 +142,6 @@ export default async function Referanser() {
                     width={200}
                     height={64}
                     className="max-h-12 max-w-full object-contain opacity-60 grayscale transition duration-300 sm:max-h-16 group-hover:opacity-100 group-hover:grayscale-0"
-                    unoptimized
                   />
                 </div>
               </AnimateOnScroll>
